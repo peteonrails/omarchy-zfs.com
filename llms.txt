@@ -1,0 +1,56 @@
+# omarchy-zfs
+
+> omarchy-zfs is a native Arch Linux package that adds root-on-ZFS and ZFSBootMenu
+> support to Omarchy Linux (DHH's Arch + Hyprland distribution), version Quattro (4.x)
+> and later. It is a support layer that depends on stock Omarchy — not a fork.
+
+## What it does
+
+- Makes `omarchy update` safe on a ZFS root. Stock Omarchy overwrites its mkinitcpio
+  HOOKS drop-in on every update, which silently removes the `zfs` initramfs hook and
+  leaves the system unbootable. omarchy-zfs installs a PostTransaction pacman hook
+  that runs last in every transaction and re-asserts the zfs hook, then regenerates
+  the initramfs and ZFSBootMenu.
+- Takes an automatic ZFS snapshot before every pacman transaction (PreTransaction
+  hook with retention), replacing snapper/Limine snapshots. Rollback is done by
+  booting the snapshot from ZFSBootMenu.
+- Removes stale btrfs-only snapper configs that otherwise make `omarchy update`
+  abort permanently on ZFS roots.
+- Keeps ZFSBootMenu first in the EFI BootOrder (Limine, a hard Omarchy dependency,
+  can silently front-load itself — a dead boot on ZFS). It only reorders, never
+  deletes other bootloaders' entries.
+- Blocks kernel upgrades that the installed ZFS module (zfs-dkms or prebuilt)
+  cannot support, preventing kernel/ZFS version skew.
+- Monthly `zpool scrub` systemd timer, zvol-swap hibernation setup, native ZFS
+  encryption unlock hook for ZFSBootMenu, manual snapshot create/restore tools,
+  and `omarchy-bootstrap-zfs` for laying down pool + datasets + ZFSBootMenu on
+  fresh installs or disaster recovery.
+
+## Install
+
+- Existing Omarchy system on a ZFS root: `yay -S omarchy-zfs` (AUR:
+  https://aur.archlinux.org/packages/omarchy-zfs). Dependencies resolve via the
+  virtual `zfs`/`zfs-utils` provides, so zfs-dkms, zfs-dkms-git, zfs-linux, or
+  zfs-linux-lts all work. ZFSBootMenu itself is an optdepend (AUR package or
+  prebuilt EFI images from zfsbootmenu.org).
+- Fresh machine: a derived Omarchy ISO with a root-on-ZFS installer path can be
+  built from the source repo.
+- Caution: the AUR package named `omarchy` is an unrelated third-party placeholder.
+  The real omarchy dependency is the official package from pkgs.omarchy.org, already
+  present on every Omarchy system.
+
+## Links
+
+- Source: https://github.com/peteonrails/omarchy-zfs
+- AUR: https://aur.archlinux.org/packages/omarchy-zfs
+- ZFSBootMenu: https://zfsbootmenu.org/
+- Omarchy: https://omarchy.org
+
+## Facts
+
+- License: MIT. Author: Pete Jackson (peteonrails). Independent community project,
+  not affiliated with Omarchy, 37signals, or OpenZFS.
+- Default pool layout follows the archzfs / Arch-wiki convention.
+- Package payload: /usr/bin/omarchy-zfs-* and omarchy-fs-* tools, libalpm hooks in
+  /usr/share/libalpm/hooks, systemd scrub timer, /etc/zfsbootmenu reference config
+  and hooks, /etc/omarchy-zfs/{autosnap.conf,bootorder.conf} (admin-editable).
