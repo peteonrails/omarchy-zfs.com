@@ -1,0 +1,5 @@
+#!/bin/bash
+# omarchy-zfs installer entry point: https://omarchy-zfs.com/install
+# Stable stub — the real logic lives in the omarchy-zfs repo.
+set -euo pipefail
+exec bash <(curl -fsSL https://raw.githubusercontent.com/peteonrails/omarchy-zfs/main/bootstrap/iso-zfs.sh) "$@"
