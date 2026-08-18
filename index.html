@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>omarchy-zfs — Root-on-ZFS + ZFSBootMenu for Omarchy Linux</title>
-<meta name="description" content="Run Omarchy Linux on a ZFS root. Native pacman package with boot-safe updates, pre-upgrade snapshots, and ZFSBootMenu — plus an installer ISO for fresh machines.">
+<meta name="description" content="Run Omarchy Linux (Quattro, 4.x+) on a ZFS root. Native pacman package with boot-safe updates, pre-upgrade snapshots, and ZFSBootMenu — plus an installer ISO for fresh machines.">
 <link rel="canonical" href="https://omarchy-zfs.com/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%A0%3C/text%3E%3C/svg%3E">
 
@@ -25,6 +25,7 @@
       "@type": "SoftwareApplication",
       "name": "omarchy-zfs",
       "operatingSystem": "Arch Linux (Omarchy)",
+      "softwareRequirements": "Omarchy Quattro (4.x) or later",
       "applicationCategory": "UtilitiesApplication",
       "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux: pre-upgrade ZFS snapshots, self-healing pacman hooks, monthly scrubs, zvol-swap hibernation, and an installer ISO.",
       "url": "https://omarchy-zfs.com/",
@@ -55,6 +56,11 @@
           "@type": "Question",
           "name": "Why ZFS instead of btrfs on Omarchy?",
           "acceptedAnswer": { "@type": "Answer", "text": "Native whole-pool encryption without a LUKS layer, raw encrypted send — snapshots replicate to a TrueNAS box or S3 without ever being decrypted — bootable snapshots via ZFSBootMenu, end-to-end checksums with self-healing scrubs, and proven multi-disk growth (mirrors, raidz) without btrfs's RAID5/6 write-hole caveats. One filesystem and one toolset from laptop to NAS to offsite." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which Omarchy versions does omarchy-zfs support?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Omarchy Quattro (4.x) and later — the versions served entirely from Arch packages. Earlier Omarchy releases used a different install model and are not supported." }
         },
         {
           "@type": "Question",
@@ -147,9 +153,9 @@ footer p{margin-bottom:.4rem}
 <main>
 <div class="hero">
   <h1>Run <em>Omarchy</em> on a ZFS root.</h1>
-  <p class="sub">A native Arch package that makes <a href="https://omarchy.org">Omarchy</a> ZFS-safe:
-  snapshots before every update, rollback from the boot menu with
-  <a href="https://zfsbootmenu.org/">ZFSBootMenu</a>, whole-pool encryption.</p>
+  <p class="sub">A native Arch package that makes <a href="https://omarchy.org">Omarchy</a>
+  (Quattro, 4.x or later) ZFS-safe: snapshots before every update, rollback from the boot
+  menu with <a href="https://zfsbootmenu.org/">ZFSBootMenu</a>, whole-pool encryption.</p>
 </div>
 
 <div class="get">
@@ -160,7 +166,7 @@ footer p{margin-bottom:.4rem}
     </svg>
     <h2>Fresh machine</h2>
     <a class="btn" href="https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.17-x86_64-quattro.iso">Download the ISO (beta)</a>
-    <p>The official Omarchy installer plus a root-on-ZFS path. Boots and installs fully offline.</p>
+    <p>The official Omarchy Quattro installer plus a root-on-ZFS path. Boots and installs fully offline.</p>
     <p class="meta">6.2 GB · sha256 475d9cb86b39…89d4799 · <a href="https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.17-x86_64-quattro.iso.sha256">checksum</a> · <a href="https://github.com/peteonrails/omarchy-zfs/tree/main/iso">build it yourself</a></p>
   </div>
   <div class="card">
@@ -171,6 +177,7 @@ footer p{margin-bottom:.4rem}
     <h2>Already on Omarchy with a ZFS root</h2>
     <pre><code>yay -S omarchy-zfs</code></pre>
     <p>For manual root-on-ZFS installs: one package, and the pacman hooks take over from there.
+    Requires Omarchy Quattro (4.x) or later.
     <a href="https://aur.archlinux.org/packages/omarchy-zfs">AUR page</a>.</p>
   </div>
 </div>
@@ -284,7 +291,7 @@ footer p{margin-bottom:.4rem}
     <text x="60" y="70" font-size="12.5" fill="#0d3b32">this package — a layer, not a fork</text>
     <!-- omarchy -->
     <rect x="40" y="90" width="340" height="56" rx="8" fill="#1c2030" stroke="#2a3044"/>
-    <text x="60" y="114" font-size="16" font-weight="600" fill="#dde3f0">Omarchy</text>
+    <text x="60" y="114" font-size="16" font-weight="600" fill="#dde3f0">Omarchy Quattro</text>
     <text x="60" y="133" font-size="12.5" fill="#8b93a7">stock, unmodified — normal updates</text>
     <!-- arch -->
     <rect x="40" y="154" width="340" height="50" rx="8" fill="#1c2030" stroke="#2a3044"/>
@@ -330,6 +337,12 @@ footer p{margin-bottom:.4rem}
     <summary>Is this a fork of Omarchy?</summary>
     <div><p>No. It's a package that depends on stock Omarchy (Quattro+). You keep normal
     <code>omarchy update</code>; this package keeps it ZFS-safe.</p></div>
+  </details>
+  <details>
+    <summary>Which Omarchy versions are supported?</summary>
+    <div><p>Omarchy Quattro (4.x) and later — the releases served entirely from Arch
+    packages, which is what makes a clean support layer possible. Earlier Omarchy
+    versions used a different install model and aren't supported.</p></div>
   </details>
   <details>
     <summary>Which ZFS packages does it work with?</summary>
