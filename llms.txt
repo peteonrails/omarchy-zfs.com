@@ -51,6 +51,11 @@ Omarchy defaults to btrfs; omarchy-zfs exists because ZFS offers:
 - One toolset from laptop to NAS: same snapshots, send/receive, and scrubs as
   ZFS-based NAS systems like TrueNAS.
 - Bootable snapshots: ZFSBootMenu boots any snapshot or boot environment directly.
+- Self-healing data: end-to-end block checksums, corruption repaired from redundancy,
+  monthly zpool scrub timer included in the package.
+- Multi-disk growth: mirrors and raidz1/2/3 supported by the installer, without
+  btrfs's RAID5/6 write-hole caveats. zvols provide snapshot-able block devices
+  (the package's hibernation swap is one); per-dataset compression/recordsize/quotas.
 
 ## Links
 

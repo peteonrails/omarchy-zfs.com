@@ -54,7 +54,7 @@
         {
           "@type": "Question",
           "name": "Why ZFS instead of btrfs on Omarchy?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Native whole-pool encryption without a LUKS layer, raw encrypted send — snapshots replicate to a TrueNAS box or S3 without ever being decrypted — bootable snapshots via ZFSBootMenu, and end-to-end checksums with self-healing scrubs. One filesystem and one toolset from laptop to NAS to offsite." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Native whole-pool encryption without a LUKS layer, raw encrypted send — snapshots replicate to a TrueNAS box or S3 without ever being decrypted — bootable snapshots via ZFSBootMenu, end-to-end checksums with self-healing scrubs, and proven multi-disk growth (mirrors, raidz) without btrfs's RAID5/6 write-hole caveats. One filesystem and one toolset from laptop to NAS to offsite." }
         },
         {
           "@type": "Question",
@@ -227,6 +227,31 @@ footer p{margin-bottom:.4rem}
       <p>The same snapshots, the same <code>send | receive</code>, the same scrubs on the
       desktop as on TrueNAS. No translation layer between your workstation and the
       rest of your storage.</p>
+    </div>
+    <div class="card">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2.5l7.5 3v5.5c0 4.8-3.2 8.4-7.5 10-4.3-1.6-7.5-5.2-7.5-10V5.5l7.5-3z"/>
+        <path d="M8.5 12l2.4 2.4 4.6-4.8"/>
+      </svg>
+      <h3>Self-healing data</h3>
+      <p>Every block is checksummed end to end. Corruption is caught on read and repaired
+      from redundancy — and the package ships a monthly <code>zpool scrub</code> timer, so
+      bitrot is found before you go looking for the file.</p>
+    </div>
+    <div class="card">
+      <svg class="icon" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <ellipse cx="7" cy="6" rx="4.5" ry="2.2"/>
+        <path d="M2.5 6v5c0 1.2 2 2.2 4.5 2.2s4.5-1 4.5-2.2V6"/>
+        <ellipse cx="25" cy="6" rx="4.5" ry="2.2"/>
+        <path d="M20.5 6v5c0 1.2 2 2.2 4.5 2.2s4.5-1 4.5-2.2V6"/>
+        <ellipse cx="16" cy="12.5" rx="4.5" ry="2.2"/>
+        <path d="M11.5 12.5v5c0 1.2 2 2.2 4.5 2.2s4.5-1 4.5-2.2v-5"/>
+        <path d="M7 15.5c0 3 3.5 5 9 5s9-2 9-5" stroke-dasharray="2.5 3"/>
+      </svg>
+      <h3>One pool, many disks</h3>
+      <p>Start on a single NVMe, grow into mirrors or raidz when you outgrow it — the
+      installer handles multi-disk topologies out of the box, with none of btrfs's
+      RAID5/6 write-hole caveats.</p>
     </div>
     <div class="card">
       <svg class="icon" viewBox="0 0 32 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
