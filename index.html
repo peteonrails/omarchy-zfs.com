@@ -104,6 +104,7 @@ nav a:hover{color:var(--fg);text-decoration:none}
 .hero p.sub{color:var(--dim);max-width:40rem;margin:1rem auto 0;font-size:1.08rem}
 .get{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;padding:1.5rem 0 2.5rem}
 .get .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.3rem;text-align:left}
+.icon{display:block;height:40px;width:auto;color:var(--accent);margin-bottom:.7rem}
 .get h2{font-size:1rem;color:var(--accent);margin-bottom:.6rem}
 .get p{font-size:.92rem;color:var(--dim);margin-top:.6rem}
 .get .meta{font-family:var(--mono);font-size:.8rem;color:var(--dim);margin-top:.6rem;word-break:break-all}
@@ -153,12 +154,20 @@ footer p{margin-bottom:.4rem}
 
 <div class="get">
   <div class="card">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6"/>
+      <path d="M5.8 9.2a7 7 0 0 1 3.4-3.4"/>
+    </svg>
     <h2>Fresh machine</h2>
     <a class="btn" href="https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.17-x86_64-quattro.iso">Download the ISO (beta)</a>
     <p>The official Omarchy installer plus a root-on-ZFS path. Boots and installs fully offline.</p>
     <p class="meta">6.2 GB · sha256 475d9cb86b39…89d4799 · <a href="https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.17-x86_64-quattro.iso.sha256">checksum</a> · <a href="https://github.com/peteonrails/omarchy-zfs/tree/main/iso">build it yourself</a></p>
   </div>
   <div class="card">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/>
+      <path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/><path d="M8 5.25l8 4.5"/>
+    </svg>
     <h2>Already on Omarchy with a ZFS root</h2>
     <pre><code>yay -S omarchy-zfs</code></pre>
     <p>For manual root-on-ZFS installs: one package, and the pacman hooks take over from there.
@@ -175,24 +184,58 @@ footer p{margin-bottom:.4rem}
   should too.</p>
   <div class="cards">
     <div class="card">
+      <svg class="icon" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="10.5" width="11" height="8.5" rx="1.5"/>
+        <path d="M5.5 10.5V8a3 3 0 0 1 6 0v2.5"/>
+        <circle cx="8.5" cy="14.5" r="1.1"/>
+        <circle cx="23" cy="9" r="3"/>
+        <path d="M23 12v7"/><path d="M23 16h2.5"/><path d="M23 19h2"/>
+      </svg>
       <h3>Native encryption</h3>
       <p>Encryption is a dataset property, not a LUKS layer underneath the filesystem.
       The whole pool is protected — <code>/etc</code>, <code>/var</code>, logs, credentials,
       machine-id — and ZFSBootMenu prompts for the key at boot.</p>
     </div>
     <div class="card">
+      <svg class="icon" viewBox="0 0 48 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="4.5" cy="12" r="2"/>
+        <path d="M8 12h8.5" stroke-dasharray="2.5 3"/>
+        <rect x="18.5" y="7.5" width="11" height="9.5" rx="1.5"/>
+        <rect x="22.2" y="11" width="3.6" height="3.2" rx=".6"/>
+        <path d="M22.9 11V9.9a1.1 1.1 0 0 1 2.2 0V11"/>
+        <path d="M31.5 12h7" stroke-dasharray="2.5 3"/>
+        <path d="M37 9.5l3 2.5-3 2.5"/>
+        <circle cx="43.5" cy="12" r="2"/>
+      </svg>
       <h3>Backups that stay encrypted</h3>
       <p><code>zfs send --raw</code> replicates snapshots without ever decrypting them.
       Send to a TrueNAS box, S3, or a friend's server — the key never leaves your
       machine, so where the backup lives stops mattering.</p>
     </div>
     <div class="card">
+      <svg class="icon" viewBox="0 0 48 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 15V8.8A1.3 1.3 0 0 1 5.3 7.5h9.4A1.3 1.3 0 0 1 16 8.8V15"/>
+        <path d="M2 17.5h16"/>
+        <path d="M20.5 12h6.5" stroke-dasharray="2.5 3"/>
+        <rect x="31" y="4.5" width="13" height="6" rx="1"/>
+        <rect x="31" y="13" width="13" height="6" rx="1"/>
+        <circle cx="34" cy="7.5" r=".4" fill="currentColor"/>
+        <circle cx="34" cy="16" r=".4" fill="currentColor"/>
+        <path d="M39 7.5h3"/><path d="M39 16h3"/>
+      </svg>
       <h3>One toolset, laptop to NAS</h3>
       <p>The same snapshots, the same <code>send | receive</code>, the same scrubs on the
       desktop as on TrueNAS. No translation layer between your workstation and the
       rest of your storage.</p>
     </div>
     <div class="card">
+      <svg class="icon" viewBox="0 0 32 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4.5 3v17.5"/>
+        <path d="M4.5 6h4.5"/><rect x="10.5" y="4" width="7" height="4" rx="1"/>
+        <path d="M4.5 13h4.5"/><rect x="10.5" y="11" width="7" height="4" rx="1" fill="currentColor" fill-opacity=".3"/>
+        <path d="M4.5 20.5h4.5"/><rect x="10.5" y="18.5" width="7" height="4" rx="1"/>
+        <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" transform="translate(17.4 11.2) scale(.6)" fill="#0f1117" stroke="currentColor" stroke-width="2.6"/>
+      </svg>
       <h3>Boot any snapshot</h3>
       <p>ZFSBootMenu shows snapshots and boot environments at boot. A bad update is a
       reboot away from undone — no live USB, no chroot.</p>
