@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>omarchy-zfs — Root-on-ZFS + ZFSBootMenu for Omarchy Linux</title>
-<meta name="description" content="omarchy-zfs adds root-on-ZFS with ZFSBootMenu to Omarchy Linux (Arch + Hyprland) as a native pacman package: pre-upgrade snapshots, boot-safe updates, self-healing hooks, scrubs, and hibernation.">
+<meta name="description" content="Run Omarchy Linux on a ZFS root. Native pacman package with boot-safe updates, pre-upgrade snapshots, and ZFSBootMenu — plus an installer ISO for fresh machines.">
 <link rel="canonical" href="https://omarchy-zfs.com/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%A0%3C/text%3E%3C/svg%3E">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://omarchy-zfs.com/">
 <meta property="og:title" content="omarchy-zfs — Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
-<meta property="og:description" content="Run Omarchy on a ZFS root without fear. Package-owned ZFS tooling, pacman-hook self-healing, pre-upgrade snapshots, and ZFSBootMenu — installable from the AUR.">
+<meta property="og:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. AUR package + installer ISO.">
 <meta property="og:site_name" content="omarchy-zfs">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="omarchy-zfs — Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
-<meta name="twitter:description" content="Run Omarchy on a ZFS root without fear. Native pacman package: snapshots, self-healing hooks, boot-order guard, hibernation.">
+<meta name="twitter:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. AUR package + installer ISO.">
 
 <script type="application/ld+json">
 {
@@ -26,7 +26,7 @@
       "name": "omarchy-zfs",
       "operatingSystem": "Arch Linux (Omarchy)",
       "applicationCategory": "UtilitiesApplication",
-      "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux, packaged the Arch-native way. Provides pre-upgrade ZFS snapshots, self-healing mkinitcpio/snapper/EFI-boot-order pacman hooks, monthly scrubs, zvol-swap hibernation, and a pool/dataset bootstrap tool.",
+      "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux: pre-upgrade ZFS snapshots, self-healing pacman hooks, monthly scrubs, zvol-swap hibernation, and an installer ISO.",
       "url": "https://omarchy-zfs.com/",
       "downloadUrl": "https://aur.archlinux.org/packages/omarchy-zfs",
       "softwareVersion": "1.0.1",
@@ -44,32 +44,32 @@
         {
           "@type": "Question",
           "name": "Does omarchy update break a ZFS root?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Stock Omarchy overwrites its mkinitcpio HOOKS drop-in on every update, silently removing the zfs hook and producing an unbootable initramfs. omarchy-zfs installs a PostTransaction pacman hook that runs last in every transaction and re-asserts the zfs hook before regenerating the initramfs and ZFSBootMenu, so updates stay boot-safe." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Not with omarchy-zfs installed. Stock Omarchy rewrites its mkinitcpio config on every update, which drops the zfs hook and leaves the next boot unable to mount the root. omarchy-zfs re-asserts the hook after every pacman transaction and regenerates the initramfs and ZFSBootMenu." }
         },
         {
           "@type": "Question",
           "name": "Is omarchy-zfs a fork of Omarchy?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. It is a regular Arch package that depends on stock Omarchy (Quattro and later) and layers ZFS support on top. You keep normal Omarchy updates from pkgs.omarchy.org; the package's hooks keep the ZFS layer intact through them." }
+          "acceptedAnswer": { "@type": "Answer", "text": "No. It is an Arch package that depends on stock Omarchy (Quattro and later). You keep normal Omarchy updates from the official repo; the package keeps them ZFS-safe." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why ZFS instead of btrfs on Omarchy?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Native whole-pool encryption without a LUKS layer, raw encrypted send — snapshots replicate to a TrueNAS box or S3 without ever being decrypted — bootable snapshots via ZFSBootMenu, and end-to-end checksums with self-healing scrubs. One filesystem and one toolset from laptop to NAS to offsite." }
         },
         {
           "@type": "Question",
           "name": "How do I install omarchy-zfs?",
-          "acceptedAnswer": { "@type": "Answer", "text": "On an existing Omarchy system whose root is already ZFS: install omarchy-zfs from the AUR with an AUR helper such as yay -S omarchy-zfs. For fresh installs, a derived Omarchy ISO with a ZFS installer is provided so you can lay down a ZFS root from the start." }
+          "acceptedAnswer": { "@type": "Answer", "text": "On an existing Omarchy system whose root is already ZFS: yay -S omarchy-zfs. For a fresh machine, boot the omarchy-zfs ISO and choose the ZFS install path." }
         },
         {
           "@type": "Question",
-          "name": "Which kernels and ZFS packages does it work with?",
-          "acceptedAnswer": { "@type": "Answer", "text": "The package depends on the virtual zfs and zfs-utils provides, so zfs-dkms, zfs-dkms-git, zfs-linux, or zfs-linux-lts all satisfy it. A PreTransaction kernel guard blocks kernel upgrades that the installed ZFS module cannot build against, preventing unbootable kernel/ZFS version skew." }
+          "name": "Which ZFS packages does it work with?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Any provider of the virtual zfs and zfs-utils packages: zfs-dkms, zfs-dkms-git, zfs-linux, or zfs-linux-lts. A pacman hook blocks kernel upgrades the installed ZFS module can't build against." }
         },
         {
           "@type": "Question",
-          "name": "Does it support native ZFS encryption and hibernation?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. It ships a ZFSBootMenu unlock hook for natively encrypted pools, and omarchy-zfs-hibernation-setup configures suspend-to-disk using a ZFS zvol as swap." }
-        },
-        {
-          "@type": "Question",
-          "name": "What replaces snapper and Limine snapshots on ZFS?",
-          "acceptedAnswer": { "@type": "Answer", "text": "A PreTransaction pacman hook takes a ZFS snapshot before every package transaction (with retention), and ZFSBootMenu lets you boot any snapshot or boot environment directly from the boot menu. Stale btrfs-only snapper configs are cleaned automatically so omarchy update never aborts on them." }
+          "name": "How do I roll back a bad update?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Reboot into ZFSBootMenu and boot the snapshot taken automatically before the transaction. Promote it permanently with omarchy-zfs-snapshot restore." }
         }
       ]
     }
@@ -81,60 +81,52 @@
 :root{
   --bg:#0f1117; --bg2:#161923; --panel:#1c2030; --line:#2a3044;
   --fg:#dde3f0; --dim:#8b93a7; --accent:#4fd6be; --accent2:#7aa2f7;
-  --warn:#e0af68; --mono:ui-monospace,'JetBrains Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --mono:ui-monospace,'JetBrains Mono','Cascadia Code',Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
 a{color:var(--accent2);text-decoration:none}
 a:hover{text-decoration:underline}
 code,pre{font-family:var(--mono);font-size:.92em}
 code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:.1em .35em}
-pre{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:1rem 1.2rem;overflow-x:auto;line-height:1.5}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:.9rem 1.1rem;overflow-x:auto;line-height:1.5}
 pre code{background:none;border:none;padding:0}
-.wrap{max-width:960px;margin:0 auto;padding:0 1.25rem}
+.wrap{max-width:920px;margin:0 auto;padding:0 1.25rem}
 header.site{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 0;border-bottom:1px solid var(--line)}
 .brand{font-family:var(--mono);font-weight:700;font-size:1.05rem;color:var(--fg)}
 .brand span{color:var(--accent)}
 nav a{color:var(--dim);margin-left:1.2rem;font-size:.95rem}
 nav a:hover{color:var(--fg);text-decoration:none}
-.hero{padding:4.5rem 0 3.5rem;text-align:center}
-.hero h1{font-size:clamp(1.9rem,5vw,3rem);line-height:1.15;letter-spacing:-.02em}
+.hero{padding:3.5rem 0 2.5rem;text-align:center}
+.hero h1{font-size:clamp(1.8rem,4.5vw,2.7rem);line-height:1.15;letter-spacing:-.02em}
 .hero h1 em{font-style:normal;color:var(--accent)}
-.hero p.sub{color:var(--dim);max-width:44rem;margin:1.2rem auto 0;font-size:1.12rem}
-.install{margin:2.2rem auto 0;max-width:34rem;text-align:left}
-.install pre{position:relative;border-color:#34405e}
-.install pre::before{content:"install from the AUR";position:absolute;top:-.7em;left:.9rem;background:var(--bg2);color:var(--dim);font:600 .7rem/1 system-ui;letter-spacing:.08em;text-transform:uppercase;padding:0 .4em}
-.cta{margin-top:1.6rem;display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
-.btn{display:inline-block;padding:.6rem 1.2rem;border-radius:8px;border:1px solid var(--line);color:var(--fg);font-weight:600;font-size:.95rem}
-.btn:hover{text-decoration:none;border-color:var(--accent);color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#08201b}
-.btn.primary:hover{filter:brightness(1.1);color:#08201b}
-section{padding:3rem 0;border-top:1px solid var(--line)}
-section h2{font-size:1.6rem;margin-bottom:.4rem;letter-spacing:-.01em}
-section p.lead{color:var(--dim);margin-bottom:1.6rem}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1.5rem}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.3rem}
-.card h3{font-size:1.03rem;margin-bottom:.5rem;color:var(--accent)}
-.card p{font-size:.94rem;color:var(--dim)}
-.card p code{font-size:.85em}
-table{width:100%;border-collapse:collapse;font-size:.92rem;margin-top:1.2rem}
-th,td{text-align:left;padding:.55rem .7rem;border-bottom:1px solid var(--line);vertical-align:top}
+.hero p.sub{color:var(--dim);max-width:40rem;margin:1rem auto 0;font-size:1.08rem}
+.get{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;padding:1.5rem 0 2.5rem}
+.get .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.3rem;text-align:left}
+.get h2{font-size:1rem;color:var(--accent);margin-bottom:.6rem}
+.get p{font-size:.92rem;color:var(--dim);margin-top:.6rem}
+.get .meta{font-family:var(--mono);font-size:.8rem;color:var(--dim);margin-top:.6rem;word-break:break-all}
+.btn{display:inline-block;margin-top:.4rem;padding:.55rem 1.1rem;border-radius:8px;background:var(--accent);color:#08201b;font-weight:600;font-size:.95rem}
+.btn:hover{filter:brightness(1.1);text-decoration:none;color:#08201b}
+section{padding:2.6rem 0;border-top:1px solid var(--line)}
+section h2{font-size:1.5rem;margin-bottom:.8rem;letter-spacing:-.01em}
+section p{margin-bottom:.9rem}
+section p.dim{color:var(--dim)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-top:1.2rem}
+.card h3{font-size:1rem;margin-bottom:.4rem;color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.2rem}
+.card p{font-size:.92rem;color:var(--dim);margin:0}
+table{width:100%;border-collapse:collapse;font-size:.92rem;margin-top:1rem}
+th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--line);vertical-align:top}
 th{color:var(--dim);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em}
 td code{white-space:nowrap}
 .tablewrap{overflow-x:auto}
-.steps{counter-reset:step;margin-top:1.4rem}
-.step{display:flex;gap:1rem;margin-bottom:1.4rem}
-.step::before{counter-increment:step;content:counter(step);flex:0 0 2rem;height:2rem;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--accent);font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
-.step h3{font-size:1.02rem;margin-bottom:.3rem}
-.step p{color:var(--dim);font-size:.95rem}
-.step pre{margin-top:.6rem}
-details{border:1px solid var(--line);border-radius:8px;background:var(--bg2);margin-bottom:.7rem}
-summary{cursor:pointer;padding:.85rem 1.1rem;font-weight:600}
+details{border:1px solid var(--line);border-radius:8px;background:var(--bg2);margin-bottom:.6rem}
+summary{cursor:pointer;padding:.8rem 1.1rem;font-weight:600}
 summary:hover{color:var(--accent)}
 details div{padding:0 1.1rem 1rem;color:var(--dim);font-size:.95rem}
-.note{border-left:3px solid var(--warn);background:var(--bg2);padding:.8rem 1rem;border-radius:0 8px 8px 0;color:var(--dim);font-size:.93rem;margin-top:1.2rem}
-footer{border-top:1px solid var(--line);padding:2.5rem 0;color:var(--dim);font-size:.88rem;text-align:center}
+footer{border-top:1px solid var(--line);padding:2.2rem 0;color:var(--dim);font-size:.88rem;text-align:center}
 footer p{margin-bottom:.4rem}
 </style>
 </head>
@@ -144,9 +136,8 @@ footer p{margin-bottom:.4rem}
 <header class="site">
   <div class="brand"><span>❖</span> omarchy-zfs</div>
   <nav>
-    <a href="#why">Why</a>
+    <a href="#why-zfs">Why ZFS</a>
     <a href="#features">Features</a>
-    <a href="#install">Install</a>
     <a href="#faq">FAQ</a>
     <a href="https://github.com/peteonrails/omarchy-zfs">GitHub</a>
   </nav>
@@ -154,135 +145,110 @@ footer p{margin-bottom:.4rem}
 
 <main>
 <div class="hero">
-  <h1>Run <em>Omarchy</em> on a ZFS root.<br>Without fear.</h1>
-  <p class="sub">omarchy-zfs is a native Arch package that layers root-on-ZFS and
-  <a href="https://zfsbootmenu.org/">ZFSBootMenu</a> onto stock
-  <a href="https://omarchy.org">Omarchy</a> — pre-upgrade snapshots, self-healing
-  update hooks, and bootable snapshot rollback, all owned by pacman.</p>
-  <div class="install">
-<pre><code>yay -S omarchy-zfs</code></pre>
+  <h1>Run <em>Omarchy</em> on a ZFS root.</h1>
+  <p class="sub">A native Arch package that makes <a href="https://omarchy.org">Omarchy</a> ZFS-safe:
+  snapshots before every update, rollback from the boot menu with
+  <a href="https://zfsbootmenu.org/">ZFSBootMenu</a>, whole-pool encryption.</p>
+</div>
+
+<div class="get">
+  <div class="card">
+    <h2>Already on Omarchy with a ZFS root</h2>
+    <pre><code>yay -S omarchy-zfs</code></pre>
+    <p>The pacman hooks take over from there. <a href="https://aur.archlinux.org/packages/omarchy-zfs">AUR page</a>.</p>
   </div>
-  <div class="cta">
-    <a class="btn primary" href="https://aur.archlinux.org/packages/omarchy-zfs">Get it on the AUR</a>
-    <a class="btn" href="https://github.com/peteonrails/omarchy-zfs">Source on GitHub</a>
+  <div class="card">
+    <h2>Fresh machine</h2>
+    <a class="btn" href="https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.17-x86_64-quattro.iso">Download the ISO (beta)</a>
+    <p>The official Omarchy installer plus a root-on-ZFS path. Boots and installs fully offline.</p>
+    <p class="meta">6.2 GB · sha256 475d9cb86b39…89d4799 · <a href="https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.17-x86_64-quattro.iso.sha256">checksum</a> · <a href="https://github.com/peteonrails/omarchy-zfs/tree/main/iso">build it yourself</a></p>
   </div>
 </div>
 
-<section id="why">
-  <h2>Why does ZFS on Omarchy need a package?</h2>
-  <p class="lead">Omarchy assumes btrfs or ext4 with the Limine bootloader. On a ZFS root,
-  three things quietly go wrong — each one ends in an unbootable or un-updatable system.
-  omarchy-zfs turns each failure into a guarantee, enforced by pacman hooks on <strong>every</strong> transaction.</p>
+<section id="why-zfs">
+  <h2>The one opinion I couldn't sign</h2>
+  <p>Omarchy is opinionated — that's the point, and most of its opinions are right.
+  The one I couldn't agree with is btrfs. I run ZFS everywhere else: on the NAS
+  (TrueNAS), on backup targets, offsite. Putting a different filesystem on the
+  laptop breaks the chain where it matters most.</p>
   <div class="cards">
     <div class="card">
-      <h3>Boot-safety guarantee</h3>
-      <p><code>omarchy update</code> overwrites the mkinitcpio <code>HOOKS</code> drop-in with a
-      zfs-less version, so the next initramfs can't mount your root. A PostTransaction hook runs
-      <em>last</em> in every transaction, re-asserts the <code>zfs</code> hook, and regenerates the
-      initramfs + ZFSBootMenu.</p>
+      <h3>Native encryption</h3>
+      <p>Encryption is a dataset property, not a LUKS layer underneath the filesystem.
+      The whole pool is protected — <code>/etc</code>, <code>/var</code>, logs, credentials,
+      machine-id — and ZFSBootMenu prompts for the key at boot.</p>
     </div>
     <div class="card">
-      <h3>Update-survivability guarantee</h3>
-      <p>Omarchy's installer leaves a btrfs-hardcoded snapper config behind. On ZFS it makes
-      <code>omarchy update</code> abort before touching a single package — permanently. The snapper
-      guard removes stale non-btrfs configs (and keeps doing so as Omarchy re-creates them).</p>
+      <h3>Backups that stay encrypted</h3>
+      <p><code>zfs send --raw</code> replicates snapshots without ever decrypting them.
+      Send to a TrueNAS box, S3, or a friend's server — the key never leaves your
+      machine, so where the backup lives stops mattering.</p>
     </div>
     <div class="card">
-      <h3>Boot-order guarantee</h3>
-      <p>Limine is a hard dependency of Omarchy and can silently move itself above ZFSBootMenu in
-      the EFI <code>BootOrder</code> — a dead boot on ZFS. The boot-order guard keeps ZFSBootMenu
-      first after every transaction, without ever deleting another bootloader's entry.</p>
+      <h3>One toolset, laptop to NAS</h3>
+      <p>The same snapshots, the same <code>send | receive</code>, the same scrubs on the
+      desktop as on TrueNAS. No translation layer between your workstation and the
+      rest of your storage.</p>
+    </div>
+    <div class="card">
+      <h3>Boot any snapshot</h3>
+      <p>ZFSBootMenu shows snapshots and boot environments at boot. A bad update is a
+      reboot away from undone — no live USB, no chroot.</p>
     </div>
   </div>
 </section>
 
 <section id="features">
-  <h2>What you get</h2>
-  <p class="lead">Everything is a real, package-owned file — nothing dangles in
-  <code>/usr/local</code>, and <code>omarchy update</code> can never silently strip the ZFS layer.</p>
+  <h2>What the package does</h2>
+  <p class="dim">Stock Omarchy assumes btrfs: updates rewrite the initramfs config without the
+  <code>zfs</code> hook, snapper aborts on non-btrfs roots, and Limine can push itself ahead of
+  ZFSBootMenu in the EFI boot order. Each one ends in a system that won't boot or won't update.
+  omarchy-zfs fixes all three with pacman hooks that run on every transaction — everything is a
+  package-owned file, so <code>omarchy update</code> can't strip it.</p>
   <div class="tablewrap">
   <table>
     <tr><th>Capability</th><th>How</th></tr>
-    <tr><td>Pre-upgrade snapshots</td><td>PreTransaction hook snapshots your pool before every pacman transaction, with retention (<code>omarchy-zfs-autosnap</code>)</td></tr>
-    <tr><td>Bootable rollback</td><td>ZFSBootMenu boots any snapshot or boot environment straight from the boot menu</td></tr>
-    <tr><td>Kernel-skew protection</td><td>PreTransaction guard blocks kernel upgrades the installed ZFS module can't build against</td></tr>
-    <tr><td>Self-healing initramfs</td><td><code>omarchy-zfs-ensure-mkinitcpio</code> re-asserts the <code>zfs</code> mkinitcpio hook after every transaction</td></tr>
-    <tr><td>EFI boot-order guard</td><td>Keeps ZFSBootMenu first in <code>BootOrder</code>; opt out via <code>/etc/omarchy-zfs/bootorder.conf</code></td></tr>
-    <tr><td>Pool health</td><td>Monthly <code>zpool scrub</code> systemd timer</td></tr>
-    <tr><td>Hibernation</td><td>Suspend-to-disk on a ZFS zvol swap (<code>omarchy-zfs-hibernation-setup</code>)</td></tr>
-    <tr><td>Native encryption</td><td>ZFSBootMenu unlock hook for natively encrypted pools, Omarchy-themed</td></tr>
-    <tr><td>Manual snapshots</td><td><code>omarchy-zfs-snapshot</code> create/restore, filesystem-agnostic <code>omarchy-fs-*</code> detection</td></tr>
-    <tr><td>Fresh installs &amp; DR</td><td><code>omarchy-bootstrap-zfs</code> lays down pool, datasets, and ZFSBootMenu from any live ISO</td></tr>
+    <tr><td>Snapshot before every update</td><td>PreTransaction hook with retention (<code>omarchy-zfs-autosnap</code>)</td></tr>
+    <tr><td>Boot-safe updates</td><td>PostTransaction hook re-asserts the <code>zfs</code> initramfs hook, regenerates initramfs + ZBM</td></tr>
+    <tr><td>Kernel-skew protection</td><td>Blocks kernel upgrades the installed ZFS module can't build against</td></tr>
+    <tr><td>EFI boot-order guard</td><td>Keeps ZFSBootMenu first; never deletes other entries</td></tr>
+    <tr><td>Snapper cleanup</td><td>Removes btrfs-only snapper configs that abort <code>omarchy update</code> on ZFS</td></tr>
+    <tr><td>Pool health</td><td>Monthly <code>zpool scrub</code> timer</td></tr>
+    <tr><td>Hibernation</td><td>Suspend-to-disk on a zvol swap</td></tr>
+    <tr><td>Fresh installs &amp; recovery</td><td><code>omarchy-bootstrap-zfs</code>: pool, datasets, encryption, ZBM — from the ISO or any live environment</td></tr>
   </table>
   </div>
-</section>
-
-<section id="install">
-  <h2>Install</h2>
-  <div class="steps">
-    <div class="step">
-      <h3>Already running Omarchy on a ZFS root</h3>
-      <p>Install the package; the hooks take over from there. ZFSBootMenu itself is a soft
-      dependency — install it from the AUR or use the prebuilt EFI images.</p>
-      <pre><code>yay -S omarchy-zfs</code></pre>
-    </div>
-    <div class="step">
-      <h3>Fresh machine</h3>
-      <p>Use the omarchy-zfs ISO — the stock Omarchy installer built with a root-on-ZFS path
-      (pool + datasets + ZFSBootMenu, encryption optional). Build it yourself in one command from
-      the <a href="https://github.com/peteonrails/omarchy-zfs">repo</a>.</p>
-    </div>
-    <div class="step">
-      <h3>Migrating an existing btrfs/ext4 Omarchy install</h3>
-      <p>Possible with a second disk or backup/restore: replicate your data, bootstrap the pool with
-      <code>omarchy-bootstrap-zfs</code>, restore, install omarchy-zfs. See the
-      <a href="https://github.com/peteonrails/omarchy-zfs#readme">README</a> for the full procedure and safety notes.</p>
-    </div>
-  </div>
-  <p class="note"><strong>Note:</strong> the AUR also lists a third-party package named
-  <code>omarchy</code> — it's an unrelated placeholder. The real <code>omarchy</code> dependency is
-  satisfied by the official package every Omarchy system already has installed from
-  <code>pkgs.omarchy.org</code>.</p>
 </section>
 
 <section id="faq">
   <h2>FAQ</h2>
   <details>
     <summary>Is this a fork of Omarchy?</summary>
-    <div><p>No. omarchy-zfs is a regular Arch package that <em>depends on</em> stock Omarchy
-    (Quattro and later). You keep normal <code>omarchy update</code> behavior and the official
-    package channel; this package just makes those updates ZFS-safe.</p></div>
+    <div><p>No. It's a package that depends on stock Omarchy (Quattro+). You keep normal
+    <code>omarchy update</code>; this package keeps it ZFS-safe.</p></div>
   </details>
   <details>
-    <summary>Which kernel / ZFS packages does it work with?</summary>
-    <div><p>Any provider of the virtual <code>zfs</code> and <code>zfs-utils</code> packages:
-    <code>zfs-dkms</code>, <code>zfs-dkms-git</code>, <code>zfs-linux</code>, or
-    <code>zfs-linux-lts</code>. The kernel guard blocks upgrades that would out-run your ZFS
-    module's supported kernel range, so you never boot a kernel ZFS can't build for.</p></div>
+    <summary>Which ZFS packages does it work with?</summary>
+    <div><p>Any provider of <code>zfs</code>/<code>zfs-utils</code>: <code>zfs-dkms</code>,
+    <code>zfs-dkms-git</code>, <code>zfs-linux</code>, or <code>zfs-linux-lts</code>. The kernel
+    guard stops upgrades your ZFS module can't follow.</p></div>
   </details>
   <details>
     <summary>What happens to snapper and Limine?</summary>
-    <div><p>They stay installed (they're Omarchy dependencies) but inert: btrfs-only snapper configs
-    are cleaned so updates don't abort, limine/snapper timers are masked, and the boot-order guard
-    keeps ZFSBootMenu first. Nothing is force-removed, and genuine btrfs pools keep working snapper
-    coverage.</p></div>
-  </details>
-  <details>
-    <summary>Does it support native ZFS encryption?</summary>
-    <div><p>Yes. ZFSBootMenu prompts for the key at boot via the included unlock hook, themed to
-    match Omarchy.</p></div>
-  </details>
-  <details>
-    <summary>Can I hibernate on ZFS?</summary>
-    <div><p>Yes — <code>omarchy-zfs-hibernation-setup</code> creates a zvol swap sized to your RAM
-    and wires up the resume path. <code>omarchy-zfs-hibernation-available</code> reports whether
-    your system qualifies.</p></div>
+    <div><p>They stay installed (Omarchy depends on them) but inert: stale snapper configs are
+    cleaned, related timers are masked, and the boot-order guard keeps ZFSBootMenu first. A real
+    btrfs pool on a second disk keeps working snapper coverage.</p></div>
   </details>
   <details>
     <summary>How do I roll back a bad update?</summary>
-    <div><p>Reboot into ZFSBootMenu, pick the automatic pre-upgrade snapshot taken right before the
-    transaction, and boot it. From there you can promote it permanently with
+    <div><p>Reboot, pick the pre-upgrade snapshot in ZFSBootMenu, boot it. Promote it with
     <code>omarchy-zfs-snapshot restore</code>.</p></div>
+  </details>
+  <details>
+    <summary>Heads up: the AUR "omarchy" package</summary>
+    <div><p>The AUR package named <code>omarchy</code> is an unrelated third-party placeholder.
+    The real dependency is the official package from <code>pkgs.omarchy.org</code>, already on
+    every Omarchy system. Don't build the placeholder.</p></div>
   </details>
 </section>
 </main>
@@ -292,8 +258,7 @@ footer p{margin-bottom:.4rem}
      <a href="https://aur.archlinux.org/packages/omarchy-zfs">AUR</a> ·
      <a href="https://zfsbootmenu.org/">ZFSBootMenu</a> ·
      <a href="https://omarchy.org">Omarchy</a></p>
-  <p>MIT licensed. omarchy-zfs is an independent community project, not affiliated with
-  Omarchy, 37signals, or the OpenZFS project.</p>
+  <p>MIT licensed. Independent community project — not affiliated with Omarchy, 37signals, or OpenZFS.</p>
 </footer>
 </div>
 
