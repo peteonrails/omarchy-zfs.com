@@ -72,3 +72,22 @@ Omarchy defaults to btrfs; omarchy-zfs exists because ZFS offers:
 - Package payload: /usr/bin/omarchy-zfs-* and omarchy-fs-* tools, libalpm hooks in
   /usr/share/libalpm/hooks, systemd scrub timer, /etc/zfsbootmenu reference config
   and hooks, /etc/omarchy-zfs/{autosnap.conf,bootorder.conf} (admin-editable).
+
+## Documentation
+
+Three supported routes, each tested end to end on Omarchy Quattro:
+
+- https://omarchy-zfs.com/docs/ — index: which route applies to you, shared prerequisites
+- https://omarchy-zfs.com/docs/fresh-install — fresh machine: encrypted root-on-ZFS via the ISO,
+  ZFSBootMenu, single passphrase prompt, dataset layout, changing the passphrase, recovery
+- https://omarchy-zfs.com/docs/zfs-root-existing — existing Omarchy install to a ZFS root. There is
+  NO in-place btrfs-to-ZFS conversion; the routes are (a) back up, reinstall, restore or
+  (b) install to a second disk and keep the old install bootable
+- https://omarchy-zfs.com/docs/zfs-home — keep the btrfs root, put ZFS on /home or a data pool:
+  module strategy on Arch, pool creation, moving /home without shadowing it, boot-time import,
+  encryption key delivery, sanoid snapshots, scrubs, raw encrypted replication, kernel skew
+
+Context: Omarchy upstream formally declined ZFS support (2026-07-28, omarchy-iso#80, "Omarchy
+isn't going to support ZFS. That's a product call."), and asked for it to be written up where
+others can find it. These docs are that write-up. omarchy-zfs is a package that DEPENDS on stock
+Omarchy rather than forking it.

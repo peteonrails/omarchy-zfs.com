@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Convert an existing Omarchy install to a ZFS root | omarchy-zfs docs</title>
+<meta name="description" content="How to move an existing Omarchy Quattro install from btrfs to a root-on-ZFS pool: what to back up, the two safe routes (reinstall-and-restore, or a second disk with the old install kept bootable), and why in-place conversion does not exist.">
+<link rel="canonical" href="https://omarchy-zfs.com/docs/zfs-root-existing">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://omarchy-zfs.com/docs/zfs-root-existing">
+<meta property="og:title" content="Convert an existing Omarchy install to a ZFS root">
+<meta property="og:description" content="The safe routes from a btrfs Omarchy install to root-on-ZFS, including how to keep the old install bootable.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
+<link rel="stylesheet" href="/docs/docs.css">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"HowTo",
+  "name":"Move an existing Omarchy install to a root-on-ZFS pool",
+  "description":"Two safe routes from a btrfs Omarchy Quattro install to root-on-ZFS: back up and reinstall, or install to a second disk and keep the old one bootable.",
+  "url":"https://omarchy-zfs.com/docs/zfs-root-existing",
+  "step":[
+    {"@type":"HowToStep","name":"Confirm what you are on","url":"https://omarchy-zfs.com/docs/zfs-root-existing#confirm"},
+    {"@type":"HowToStep","name":"Capture the install","url":"https://omarchy-zfs.com/docs/zfs-root-existing#capture"},
+    {"@type":"HowToStep","name":"Install root-on-ZFS","url":"https://omarchy-zfs.com/docs/zfs-root-existing#install"},
+    {"@type":"HowToStep","name":"Restore your data","url":"https://omarchy-zfs.com/docs/zfs-root-existing#restore"}
+  ]
+}
+</script>
+</head>
+<body>
+<div class="wrap">
+<header class="site">
+  <div class="brand"><span>❖</span> <a href="/">omarchy-zfs</a></div>
+  <nav>
+    <a href="/docs/">Docs</a>
+    <a href="/#features">Features</a>
+    <a href="https://github.com/peteonrails/omarchy-zfs">GitHub</a>
+  </nav>
+</header>
+
+<main>
+<p class="crumb"><a href="/docs/">Docs</a> → Existing install → ZFS root</p>
+<h1>Already running Omarchy? <em>Getting to a ZFS root</em></h1>
+<p class="lede">You have a working Omarchy install on btrfs and you want ZFS
+underneath it. This page is the honest version: what is actually possible, the
+two routes that work, and how to keep your current install bootable while you
+move.</p>
+
+<div class="danger">
+  <strong>There is no in-place btrfs → ZFS conversion</strong>
+  <p>btrfs and ZFS are different on-disk formats. No tool rewrites one into the
+  other, and anything claiming to "convert" your root filesystem is either
+  copying data elsewhere first or about to lose it. Every real route below moves
+  your data to a new pool and reinstalls the operating system.</p>
+</div>
+
+<p>That sounds worse than it is. On Omarchy Quattro almost nothing you care
+about lives outside <code>/home</code>: the shell, themes, keybindings and
+Quickshell config are all in <code>~/.config</code> and
+<code>~/.local/share/omarchy</code>, and the OS itself is just packages. A
+reinstall plus a restore is usually a 45-minute job, and you end up on a
+filesystem you can snapshot and roll back forever after.</p>
+
+<div class="tablewrap">
+<table>
+  <tr><th>Route</th><th>You need</th><th>Downtime</th><th>Safety net</th></tr>
+  <tr>
+    <td><strong>A — Reinstall &amp; restore</strong></td>
+    <td>One disk + an external drive for the backup</td>
+    <td>The whole job; the machine is unusable in between</td>
+    <td>Your backup. That is all. Verify it before you start.</td>
+  </tr>
+  <tr>
+    <td><strong>B — Second disk</strong></td>
+    <td>A spare internal disk (or an M.2 slot free)</td>
+    <td>Minutes — you boot back into the old install any time</td>
+    <td>The old install stays intact and bootable until you erase it.</td>
+  </tr>
+</table>
+</div>
+<p><strong>Take route B if you have any way to add a disk.</strong> Being able
+to boot the old system while the new one settles in is worth more than the cost
+of the drive.</p>
+
+<h2 id="confirm">1. Confirm what you are on</h2>
+<pre><code>findmnt -no FSTYPE /            # btrfs, probably
+pacman -Q omarchy               # must be a Quattro (4.x) version
+[ -d /sys/firmware/efi ] &amp;&amp; echo UEFI || echo "BIOS — ZFSBootMenu needs UEFI"
+mokutil --sb-state              # want: SecureBoot disabled
+lsblk -o NAME,SIZE,MODEL,TRAN,MOUNTPOINTS</code></pre>
+<p>If <code>pacman -Q omarchy</code> reports nothing, you are on a pre-Quattro
+<code>curl | bash</code> install. Upgrade to Quattro first, on btrfs, and get
+that working before adding ZFS to the pile.</p>
+
+<h2 id="capture">2. Capture the install</h2>
+<p>Do this even on route B, where you keep the old disk. It takes minutes and it
+is the difference between an afternoon and a bad week.</p>
+
+<h3>Your data</h3>
+<pre><code># Everything of yours, permissions and ACLs intact.
+sudo rsync -aHAX --numeric-ids --info=progress2 \
+     /home/ /run/media/$USER/backup/home/</code></pre>
+
+<h3>The shape of the system</h3>
+<pre><code>mkdir -p ~/migration &amp;&amp; cd ~/migration
+
+pacman -Qqe          > pkgs-explicit.txt     # what you asked for
+pacman -Qqm          > pkgs-foreign.txt      # AUR / local packages
+systemctl list-unit-files --state=enabled > units-enabled.txt
+sudo cp -r /etc/NetworkManager/system-connections wifi-and-vpn
+timedatectl show     > timedate.txt
+localectl status     > locale.txt
+crontab -l           > crontab.txt 2>/dev/null || true</code></pre>
+<p>Copy <code>~/migration</code> to the external drive too.</p>
+
+<div class="note">
+  <strong>What not to restore</strong>
+  <p><code>/etc/fstab</code>, <code>/etc/mkinitcpio.conf</code> and anything
+  bootloader-related belong to the <em>old</em> layout. Restoring them onto a ZFS
+  root is how people end up in an emergency shell. Let the new install own boot
+  configuration; bring back your data and your app config, not the plumbing.</p>
+</div>
+
+<h2 id="install">3. Install root-on-ZFS</h2>
+<p>Both routes use the ISO from <a href="/docs/fresh-install">route 1</a> —
+follow that page for the download, the USB stick, the 15-second question and the
+installer's prompts. The only difference is which disk you point it at.</p>
+
+<h3>Route A — same disk</h3>
+<p>Verify the backup <em>from another machine or a live USB</em> first: mount it,
+open a few files, check the sizes look sane. Then install to the disk and erase
+the old system. Point of no return; there is no undo.</p>
+
+<h3>Route B — second disk, old install untouched</h3>
+<ol>
+  <li>Shut down, fit the new disk, boot the ISO.</li>
+  <li>At the disk selection step, pick <strong>the new disk</strong>. Read the
+  destructive-confirmation list carefully — it names the exact devices, and this
+  is the moment to catch a mix-up.</li>
+  <li>Install as normal, using the same username as before so restoring
+  <code>/home/&lt;user&gt;</code> lands with the right ownership.</li>
+</ol>
+<div class="warn">
+  <strong>Both disks now have an EFI partition</strong>
+  <p>Your firmware will have entries for Limine (old install) and ZFSBootMenu
+  (new one). <code>omarchy-zfs</code> keeps ZFSBootMenu first in the EFI boot
+  order on every package transaction, but it <strong>only ever reorders — it
+  never deletes another bootloader's entry</strong>, because which systems stay
+  bootable is your call. So the old install remains one firmware-menu keypress
+  away. Check with <code>efibootmgr</code>.</p>
+</div>
+
+<h2 id="restore">4. Restore your data</h2>
+<p>Log into the new system once so the account and its home dataset exist, then
+restore into it. On route B the old disk is right there:</p>
+<pre><code># Route B: mount the old btrfs root read-only and copy from it
+sudo mkdir -p /mnt/old
+sudo mount -o ro /dev/nvme1n1p2 /mnt/old        # your old root partition
+sudo rsync -aHAX --numeric-ids --info=progress2 \
+     /mnt/old/home/pete/ /home/pete/
+
+# Route A: same thing, from the external drive
+sudo rsync -aHAX --numeric-ids --info=progress2 \
+     /run/media/pete/backup/home/pete/ /home/pete/</code></pre>
+<div class="warn">
+  <strong>Make sure <code>/home</code> is really mounted first</strong>
+  <p><code>mountpoint -q /home &amp;&amp; echo mounted</code> — not
+  <code>findmnt /home</code>, which reports the nearest <em>enclosing</em> mount
+  and answers "mounted" for a plain directory. If you rsync 200 GB into
+  <code>/home</code> while its dataset is unmounted, the data lands in the root
+  dataset and vanishes under the real mount at the next boot. This exact trap
+  cost this project a full day.</p>
+</div>
+<p>Fix ownership if the UID changed, then put the packages back:</p>
+<pre><code>sudo chown -R pete:pete /home/pete
+
+# Repo packages you had explicitly installed
+sudo pacman -S --needed - &lt; ~/migration/pkgs-explicit.txt
+
+# AUR packages, via your helper
+yay -S --needed $(cat ~/migration/pkgs-foreign.txt)
+
+# Network connections
+sudo cp -r ~/migration/wifi-and-vpn/* /etc/NetworkManager/system-connections/
+sudo chmod 600 /etc/NetworkManager/system-connections/*
+sudo systemctl restart NetworkManager</code></pre>
+<p class="dim">Expect <code>pkgs-explicit.txt</code> to contain a few packages
+that no longer exist or now come from a different repo. Read pacman's complaints
+rather than forcing past them.</p>
+
+<h2>5. Take the first snapshot</h2>
+<p>You are on ZFS now — use it before you customise anything:</p>
+<pre><code>sudo zfs snapshot -r zroot@migrated
+zfs list -t snapshot</code></pre>
+<p>From here on, every package transaction takes a pre-upgrade snapshot
+automatically, and ZFSBootMenu can roll back to any of them from before the OS
+starts.</p>
+
+<h2>Retiring the old disk (route B)</h2>
+<p>Live on the new install for a week or two first. When you are ready, either
+wipe the old disk and add it as a mirror of your pool:</p>
+<pre><code># Same-size or larger disk. This makes zroot self-healing.
+sudo zpool attach zroot /dev/disk/by-id/&lt;existing&gt; /dev/disk/by-id/&lt;old-disk&gt;
+zpool status zroot        # watch it resilver</code></pre>
+<p>…or keep it as a local backup target and replicate to it:</p>
+<pre><code>sudo zpool create -o ashift=12 -O compression=zstd -O mountpoint=none backup /dev/disk/by-id/&lt;old-disk&gt;
+sudo zfs snapshot -r zroot@$(date +%F)
+sudo zfs send -R zroot@$(date +%F) | sudo zfs receive -u -d backup</code></pre>
+<p>If you attach it as a mirror, remember the old EFI partition is gone —
+re-check <code>efibootmgr</code> and keep at least one working ZFSBootMenu entry.</p>
+
+<h2>Why not do it in place?</h2>
+<p>People ask whether they can shrink btrfs, build a pool in the freed space,
+copy the system across, and switch. It is technically possible and it is a bad
+trade: you are doing a live copy of a running system, then hand-assembling the
+parts the installer would have got right — the hostid inside the initramfs, the
+<code>zfs</code> mkinitcpio hook ordering, the ESP contents, the ZFSBootMenu EFI
+entry and the boot-environment layout. Each one is a silent unbootable-system
+bug if you get it slightly wrong, and you will be debugging it with no working
+machine. The ISO automates exactly that list, and a second disk costs less than
+the evening you would spend.</p>
+
+<h2>Alternatives worth considering</h2>
+<ul>
+  <li><strong>Keep btrfs, add ZFS for data</strong> — if what you actually want
+  is snapshots and replication of your <em>files</em>, route 3 gets you that
+  with no reinstall at all:
+  <a href="/docs/zfs-home">ZFS on /home or a data drive</a>.</li>
+  <li><strong>Stay on btrfs</strong> — a genuine answer. Upstream's snapper +
+  limine setup gives bootable snapshots and is the tested path. Switch because
+  you want ZFS's encryption, send/receive or checksums, not because ZFS is
+  fashionable.</li>
+</ul>
+
+<footer>
+  <p>omarchy-zfs is an independent project, not affiliated with or endorsed by
+  Basecamp or the Omarchy maintainers.</p>
+  <p>Migrated and hit something this page missed?
+  <a href="https://github.com/peteonrails/omarchy-zfs/issues">Tell us</a> — it
+  belongs here.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

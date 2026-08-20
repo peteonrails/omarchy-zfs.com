@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZFS on /home or a data drive, with a btrfs Omarchy root | omarchy-zfs docs</title>
+<meta name="description" content="Keep Omarchy's btrfs root and put ZFS on /home or a separate data pool: installing the ZFS module on Arch, creating the pool, moving /home safely, boot-time import and key handling, sanoid snapshots, scrubs, replication, and surviving kernel upgrades.">
+<link rel="canonical" href="https://omarchy-zfs.com/docs/zfs-home">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://omarchy-zfs.com/docs/zfs-home">
+<meta property="og:title" content="ZFS on /home or a data drive, with a btrfs Omarchy root">
+<meta property="og:description" content="The least invasive way to run ZFS on Omarchy — leave the root filesystem alone and put your data on a pool.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
+<link rel="stylesheet" href="/docs/docs.css">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"HowTo",
+  "name":"Put ZFS on /home or a data drive while keeping Omarchy's btrfs root",
+  "description":"Install the ZFS module on Omarchy Quattro, create a pool, move /home onto it safely, handle boot-time import and encryption keys, and set up snapshots, scrubs and replication.",
+  "url":"https://omarchy-zfs.com/docs/zfs-home",
+  "step":[
+    {"@type":"HowToStep","name":"Install the ZFS module","url":"https://omarchy-zfs.com/docs/zfs-home#module"},
+    {"@type":"HowToStep","name":"Create the pool","url":"https://omarchy-zfs.com/docs/zfs-home#pool"},
+    {"@type":"HowToStep","name":"Move /home onto it","url":"https://omarchy-zfs.com/docs/zfs-home#movehome"},
+    {"@type":"HowToStep","name":"Make it mount at boot","url":"https://omarchy-zfs.com/docs/zfs-home#boot"},
+    {"@type":"HowToStep","name":"Snapshots and scrubs","url":"https://omarchy-zfs.com/docs/zfs-home#snapshots"}
+  ]
+}
+</script>
+</head>
+<body>
+<div class="wrap">
+<header class="site">
+  <div class="brand"><span>❖</span> <a href="/">omarchy-zfs</a></div>
+  <nav>
+    <a href="/docs/">Docs</a>
+    <a href="/#features">Features</a>
+    <a href="https://github.com/peteonrails/omarchy-zfs">GitHub</a>
+  </nav>
+</header>
+
+<main>
+<p class="crumb"><a href="/docs/">Docs</a> → ZFS on /home or a data drive</p>
+<h1>Keep btrfs, <em>put ZFS where your data is</em></h1>
+<p class="lede">Your Omarchy install stays exactly as it is — btrfs root, snapper,
+limine, upstream's tested boot path. ZFS goes underneath your files instead:
+<code>/home</code>, a photo array, a scratch pool, whatever you replicate to a
+NAS. No reinstall, and it is straightforward to undo.</p>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#tradeoff">What you get, and what you give up</a></li>
+    <li><a href="#module">Install the ZFS module</a></li>
+    <li><a href="#package">Install omarchy-zfs (and what it does here)</a></li>
+    <li><a href="#pool">Create the pool</a></li>
+    <li><a href="#movehome">Move /home onto it — carefully</a></li>
+    <li><a href="#boot">Make it import and mount at boot</a></li>
+    <li><a href="#encryption">Encryption and where the key lives</a></li>
+    <li><a href="#snapshots">Snapshots, scrubs, replication</a></li>
+    <li><a href="#kernel">Kernel upgrades: the one real cost</a></li>
+    <li><a href="#recovery">When /home does not show up</a></li>
+  </ol>
+</div>
+
+<h2 id="tradeoff">What you get, and what you give up</h2>
+<div class="tablewrap">
+<table>
+  <tr><th></th><th>ZFS on /home (this page)</th><th>ZFS root (<a href="/docs/fresh-install">route 1</a>)</th></tr>
+  <tr><td>Reinstall needed</td><td>No</td><td>Yes</td></tr>
+  <tr><td>Snapshots of your files</td><td>Yes</td><td>Yes</td></tr>
+  <tr><td>Roll back the <em>OS</em> from the boot menu</td><td>No — that stays btrfs/snapper</td><td>Yes, via ZFSBootMenu boot environments</td></tr>
+  <tr><td><code>zfs send</code> replication</td><td>Yes, for your data</td><td>Yes, for everything</td></tr>
+  <tr><td>Passphrase prompts at boot</td><td>Two, if you encrypt the pool (pool + login) — or use <a href="#pam">PAM unlock</a></td><td>One</td></tr>
+  <tr><td>Reversible</td><td>Easily</td><td>Reinstall</td></tr>
+  <tr><td>Exposure to kernel/ZFS skew</td><td>Yes — <code>/home</code> is missing if the module fails to build</td><td>Yes — the machine will not boot</td></tr>
+</table>
+</div>
+<p>If you only want your data on ZFS, stop here and do this. If you want
+bootable rollback of the whole operating system, you want a ZFS root.</p>
+
+<h2 id="module">1. Install the ZFS module</h2>
+<p>ZFS is out-of-tree, so on Arch you pick a strategy. This is the part people
+get wrong, so be deliberate.</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Option</th><th>What it is</th><th>Use when</th></tr>
+  <tr>
+    <td><code>zfs-dkms</code> + <code>zfs-utils</code><br><span class="dim">archzfs repo or AUR</span></td>
+    <td>Rebuilds the module for each kernel you install.</td>
+    <td>The released OpenZFS supports your kernel.</td>
+  </tr>
+  <tr>
+    <td><code>zfs-dkms-git</code> + <code>zfs-utils-git</code><br><span class="dim">AUR</span></td>
+    <td>Same, from OpenZFS master.</td>
+    <td>Arch's kernel is newer than the last OpenZFS release — often the case.
+        This is what our ISO and the author's workstation run.</td>
+  </tr>
+  <tr>
+    <td><code>zfs-linux</code> / <code>zfs-linux-lts</code><br><span class="dim">archzfs</span></td>
+    <td>Prebuilt module pinned to one exact kernel build.</td>
+    <td>You run <code>linux-lts</code> and want no compiler in the loop. Be aware
+        the pin means kernel and module must move together, and archzfs can lag
+        badly.</td>
+  </tr>
+</table>
+</div>
+<pre><code># The combination most likely to build on a current Arch kernel:
+yay -S zfs-dkms-git zfs-utils-git
+
+sudo modprobe zfs
+zfs version</code></pre>
+<div class="warn">
+  <strong>A DKMS failure is only a pacman <em>warning</em></strong>
+  <p>If the module does not build, <code>pacman</code> prints a warning and
+  carries on. Nothing stops you rebooting into a kernel with no
+  <code>zfs.ko</code>. Always confirm the module actually exists for the kernel
+  you are about to boot:</p>
+  <pre><code>ls /usr/lib/modules/$(uname -r)/updates/dkms/zfs.ko*</code></pre>
+</div>
+
+<h2 id="package">2. Install omarchy-zfs — and know what it does here</h2>
+<pre><code>yay -S omarchy-zfs</code></pre>
+<p>The package is built for root-on-ZFS, but it is deliberately inert on a btrfs
+root. Nothing on this list is guesswork — every guard checks the root filesystem
+and exits when it is not ZFS:</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Component</th><th>On a btrfs root with a ZFS data pool</th></tr>
+  <tr><td><code>omarchy-zfs-ensure-mkinitcpio</code></td><td><strong>No-op.</strong> Your initramfs and Omarchy's mkinitcpio drop-in are left alone.</td></tr>
+  <tr><td><code>omarchy-zfs-snapper-guard</code></td><td><strong>No-op.</strong> Your working snapper configs are untouched — it only removes configs pointing at something that is not btrfs, and only on a ZFS root.</td></tr>
+  <tr><td><code>omarchy-zfs-bootorder-guard</code></td><td><strong>No-op.</strong> It never touches your EFI boot order; limine stays first.</td></tr>
+  <tr><td><code>omarchy-zfs-autosnap</code></td><td><strong>No-op.</strong> Pre-upgrade snapshots are <em>not</em> automatic in this layout — see <a href="#snapshots">snapshots</a>.</td></tr>
+  <tr><td><code>omarchy-zfs-scrub.timer</code></td><td><strong>Active.</strong> Monthly scrub of <em>every</em> imported pool.</td></tr>
+  <tr><td><code>omarchy-zfs-kernel-compat-check</code></td><td><strong>Active</strong> (1.1.3+). Blocks a kernel upgrade that <code>zfs-dkms</code> cannot build against, whenever ZFS is in use — not only on ZFS roots. See <a href="#kernel">below</a>.</td></tr>
+  <tr><td><code>omarchy-bootstrap-zfs</code>, <code>omarchy-refresh-zbm</code>, ZFSBootMenu configs</td><td>Installed but unused. They are for ZFS roots.</td></tr>
+</table>
+</div>
+<p class="dim">You can skip the package entirely and manage ZFS by hand. You then
+own the kernel-skew problem and the scrub schedule yourself.</p>
+
+<h2 id="pool">3. Create the pool</h2>
+<p>Always address disks by stable path — <code>/dev/sda</code> is not stable
+across reboots:</p>
+<pre><code>ls -l /dev/disk/by-id/ | grep -v part</code></pre>
+<pre><code># Single disk. Everything on it is destroyed.
+sudo zpool create -o ashift=12 -o autotrim=on \
+  -O compression=zstd -O atime=off -O relatime=on \
+  -O xattr=sa -O acltype=posixacl -O dnodesize=auto \
+  -O mountpoint=none \
+  tank /dev/disk/by-id/ata-YOUR_DISK_ID</code></pre>
+<p>Two disks you want to survive one failure:</p>
+<pre><code>sudo zpool create ... tank mirror /dev/disk/by-id/disk-A /dev/disk/by-id/disk-B</code></pre>
+<div class="note">
+  <strong>Why these properties</strong>
+  <p><code>ashift=12</code> matches 4K sectors and cannot be changed later.
+  <code>xattr=sa</code> and <code>acltype=posixacl</code> are what systemd and
+  journald expect. <code>compression=zstd</code> is close to free and usually
+  makes things faster. <code>mountpoint=none</code> on the pool root means only
+  the datasets you name get mounted.</p>
+</div>
+<p>Add encryption at creation time if you want it — read
+<a href="#encryption">the key section</a> first, because on a btrfs root the
+interesting question is where the key lives:</p>
+<pre><code>  -O encryption=aes-256-gcm -O keyformat=passphrase -O keylocation=prompt \</code></pre>
+
+<h2 id="movehome">4. Move /home onto it — carefully</h2>
+<div class="danger">
+  <strong>Read this before typing anything</strong>
+  <p>OpenZFS defaults to <code>overlay=on</code>, so it will happily mount a
+  dataset over a <em>non-empty</em> <code>/home</code>. Your old files are then
+  invisible but still there, consuming space on the root filesystem, and any new
+  writes go to the dataset. That is how people conclude their data was "deleted".
+  Copy first, verify, then swap.</p>
+</div>
+<p>Do this with the user logged out. Switch to a TTY
+(<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F3</kbd>), log in as root or use sudo, and
+stop the display manager so nothing is writing to <code>/home</code>:</p>
+<pre><code>sudo systemctl stop sddm</code></pre>
+
+<div class="step">
+<h3>a. Create the dataset somewhere harmless</h3>
+<pre><code>sudo zfs create -o mountpoint=/mnt/newhome tank/home
+mountpoint -q /mnt/newhome &amp;&amp; echo mounted</code></pre>
+</div>
+
+<div class="step">
+<h3>b. Copy, preserving everything</h3>
+<pre><code>sudo rsync -aHAX --numeric-ids --info=progress2 /home/ /mnt/newhome/</code></pre>
+</div>
+
+<div class="step">
+<h3>c. Verify before you trust it</h3>
+<pre><code>sudo du -sh /home /mnt/newhome
+diff &lt;(cd /home &amp;&amp; sudo find . | sort) &lt;(cd /mnt/newhome &amp;&amp; sudo find . | sort) | head</code></pre>
+<p>Sizes will differ slightly — compression. The file list should not.</p>
+</div>
+
+<div class="step">
+<h3>d. Swap them</h3>
+<pre><code>sudo mv /home /home.old
+sudo mkdir /home
+sudo zfs set mountpoint=/home tank/home
+
+mountpoint -q /home &amp;&amp; echo "/home is a real mount"
+ls /home</code></pre>
+<p><code>mountpoint -q</code>, not <code>findmnt /home</code> — the latter
+reports the nearest <em>enclosing</em> mount and says "mounted" for a plain
+directory. Every shadowed-data bug in this project's history came from trusting
+it.</p>
+</div>
+
+<div class="step">
+<h3>e. Reboot and confirm, then reclaim the space</h3>
+<pre><code>sudo systemctl reboot
+# after logging back in:
+mountpoint -q /home &amp;&amp; zfs list -o name,used,mountpoint tank/home
+# once you are genuinely happy — days, not minutes:
+sudo rm -rf /home.old</code></pre>
+</div>
+
+<h2 id="boot">5. Make it import and mount at boot</h2>
+<p>Installing the packages does not necessarily enable the services, and a pool
+that imports but never mounts is worse than one that fails loudly. Check, then
+enable:</p>
+<pre><code>systemctl is-enabled zfs-import-cache zfs-mount zfs-zed zfs-import.target zfs.target
+
+sudo systemctl enable zfs-import-cache.service zfs-mount.service \
+  zfs-zed.service zfs-import.target zfs.target
+sudo zpool set cachefile=/etc/zfs/zpool.cache tank</code></pre>
+<div class="warn">
+  <strong>Do not put ZFS datasets in <code>/etc/fstab</code></strong>
+  <p>ZFS mounts them from its own properties. An fstab entry for the same path
+  races <code>zfs-mount.service</code> and you get intermittent empty mounts. The
+  exception is a dataset with <code>mountpoint=legacy</code>, which is
+  <em>only</em> mounted by fstab — a deliberate choice, not a default.</p>
+</div>
+<p>If something needs <code>/home</code> ordered precisely — and the display
+manager does — <code>zfs-mount-generator</code> is the robust answer: it turns
+your dataset list into real systemd mount units at generator time, so ordinary
+<code>After=</code>/<code>Requires=</code> works.</p>
+<p class="dim">On a ZFS root, <code>omarchy-zfs</code> also ships a
+<code>systemd-journal-flush</code> drop-in so journald waits for
+<code>/var/log</code>. If you move <code>/var/log</code> to ZFS on a btrfs root,
+you want the same ordering, or the system logs nowhere and every later problem
+becomes undebuggable.</p>
+
+<h2 id="encryption">6. Encryption and where the key lives</h2>
+<p>Native ZFS encryption is per-dataset and needs no LUKS underneath. The
+awkward part on this layout is not the crypto, it is key delivery: something has
+to unlock <code>/home</code> <em>before</em> you can log in.</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Approach</th><th>How it feels</th><th>Honest assessment</th></tr>
+  <tr>
+    <td><code>keylocation=prompt</code></td>
+    <td>Passphrase at boot, then your login password.</td>
+    <td>Safe and simple. Two secrets to type — the price of not having a ZFS
+        root.</td>
+  </tr>
+  <tr>
+    <td>Keyfile on the root filesystem</td>
+    <td>Unlocks silently.</td>
+    <td>Only meaningful if the <em>root disk is itself encrypted</em>. On a plain
+        unencrypted btrfs root this protects you against someone stealing the
+        data disk alone, and nothing else. Say that out loud before choosing
+        it.</td>
+  </tr>
+  <tr id="pam">
+    <td><code>pam_zfs_key</code></td>
+    <td>Per-user home dataset unlocked by your login password.</td>
+    <td>The nicest experience for this layout, and genuinely clever. We do not
+        package it yet, so you are wiring PAM by hand — including making a
+        password change rekey the dataset. Credit where due: Berend de Boer's
+        Omarchy fork does exactly this.</td>
+  </tr>
+</table>
+</div>
+<pre><code># Prompt-at-boot for an existing dataset
+sudo zfs change-key -o keylocation=prompt -o keyformat=passphrase tank/home</code></pre>
+
+<h2 id="snapshots">7. Snapshots, scrubs, replication</h2>
+<h3>Automatic snapshots</h3>
+<p><code>omarchy-zfs-autosnap</code> does not run on a btrfs root, so use
+<strong>sanoid</strong> — already a dependency of the package:</p>
+<pre><code># /etc/sanoid/sanoid.conf
+[tank/home]
+        use_template = production
+        recursive = yes
+
+[template_production]
+        frequently = 0
+        hourly = 24
+        daily = 14
+        weekly = 4
+        monthly = 3
+        autosnap = yes
+        autoprune = yes</code></pre>
+<pre><code>sudo systemctl enable --now sanoid.timer
+systemctl list-timers sanoid.timer
+zfs list -t snapshot -r tank</code></pre>
+<p>Recover a file without restoring anything — every dataset has a hidden
+snapshot directory:</p>
+<pre><code>ls /home/.zfs/snapshot/
+cp /home/.zfs/snapshot/autosnap_2026-08-20_12:00:00_hourly/pete/notes.md ~/</code></pre>
+
+<h3>Scrubs</h3>
+<p>With <code>omarchy-zfs</code> installed, <code>omarchy-zfs-scrub.timer</code>
+scrubs every imported pool monthly. Otherwise schedule it yourself. Check
+results — a scrub that finds errors on a single-disk pool can detect but not
+repair:</p>
+<pre><code>zpool status -v tank</code></pre>
+
+<h3>Replication</h3>
+<pre><code># Full copy to another pool or machine
+sudo zfs snapshot -r tank/home@$(date +%F)
+sudo zfs send -R tank/home@$(date +%F) | ssh nas 'zfs receive -u -d backup'
+
+# Later: incremental, only the changes
+sudo zfs send -RI tank/home@2026-08-20 tank/home@2026-08-27 | ssh nas 'zfs receive -u -d backup'</code></pre>
+<p>For an <em>encrypted</em> dataset, <code>zfs send -w</code> (raw) sends the
+still-encrypted blocks: the receiving side stores your data without ever holding
+the key, and never needs to re-encrypt. That is the property that makes an
+untrusted backup target reasonable, and it is the main thing btrfs has no answer
+for. <code>syncoid</code> (part of sanoid) wraps the whole pattern:</p>
+<pre><code>syncoid --recursive --sendoptions=w tank/home nas:backup/home</code></pre>
+
+<h2 id="kernel">8. Kernel upgrades: the one real cost</h2>
+<p>ZFS lives outside the kernel tree, so a new kernel can arrive before OpenZFS
+supports it. On a machine with ZFS on <code>/home</code> the failure is
+specific and confusing: the pool does not import, <code>/home</code> is missing,
+and the greeter accepts your password and then throws you straight back to the
+login screen. It looks exactly like a wrong password. It is not.</p>
+<p>From 1.1.3, <code>omarchy-zfs</code>'s pre-transaction guard fires whenever
+ZFS is in use — a ZFS root, any imported pool, or simply having a DKMS zfs
+package installed. When it blocks an upgrade you get a banner naming the
+candidate kernel and the maximum <code>zfs-dkms</code> supports, and pacman
+aborts <em>before</em> touching a single package:</p>
+<pre><code>ABORT: ZFS kernel compatibility check failed
+  candidate kernel: 7.2.1.arch1-1
+  zfs-dkms Linux-Maximum: 7.1
+
+  Building zfs against this kernel will fail.
+  Proceeding would leave the system unbootable on next restart.</code></pre>
+<p>Your options, in order of preference:</p>
+<ol>
+  <li><strong>Wait.</strong> Upgrade everything else:
+  <code>sudo pacman -Syu --ignore linux,linux-headers</code>.</li>
+  <li><strong>Move to <code>zfs-dkms-git</code></strong>, which usually supports
+  new kernels well before a release does.</li>
+  <li><strong>Run <code>linux-lts</code></strong> as your primary kernel — the
+  boring, correct answer for a machine you depend on.</li>
+  <li><strong>Override</strong>, only if you have thought it through and have a
+  live USB nearby:
+  <code>OMARCHY_SKIP_ZFS_KERNEL_CHECK=1 sudo -E pacman -Syu</code>.</li>
+</ol>
+<p>Whatever you do, before rebooting into a new kernel:</p>
+<pre><code>ls /usr/lib/modules/&lt;new-kernel-version&gt;/updates/dkms/zfs.ko*</code></pre>
+
+<h2 id="recovery">9. When /home does not show up</h2>
+<p>Get to a TTY (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F3</kbd>) and work through
+this in order:</p>
+<pre><code>modprobe zfs || ls /usr/lib/modules/$(uname -r)/updates/dkms/    # module there at all?
+zpool status                       # imported?
+sudo zpool import                  # what is importable?
+sudo zpool import -f tank          # hostid changed / not cleanly exported
+zfs get keystatus tank/home        # unavailable -> key not loaded
+sudo zfs load-key tank/home
+sudo zfs mount -a
+mountpoint -q /home &amp;&amp; echo ok
+sudo systemctl restart sddm</code></pre>
+<p>If the module is missing, that is the kernel-skew case above: boot your
+previous kernel or <code>linux-lts</code>, rebuild DKMS
+(<code>sudo dkms autoinstall</code>), and confirm <code>zfs.ko</code> exists
+before rebooting again.</p>
+<p>To back the whole thing out, the reverse of the move: copy
+<code>/home</code> off the dataset onto the root filesystem, set
+<code>mountpoint=none</code> on <code>tank/home</code>, and put the directory
+back. Nothing about this layout is one-way.</p>
+
+<footer>
+  <p>omarchy-zfs is an independent project, not affiliated with or endorsed by
+  Basecamp or the Omarchy maintainers.</p>
+  <p>Running a layout this page does not cover — root on ZFS with a separate
+  data pool, ZFS over iSCSI, per-user encrypted homes?
+  <a href="https://github.com/peteonrails/omarchy-zfs/issues">Open an issue</a>
+  and it can go in.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

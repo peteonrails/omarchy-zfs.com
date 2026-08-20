@@ -149,6 +149,7 @@ footer p{margin-bottom:.4rem}
 <header class="site">
   <div class="brand"><span>❖</span> omarchy-zfs</div>
   <nav>
+    <a href="/docs/">Docs</a>
     <a href="#why-zfs">Why ZFS</a>
     <a href="#features">Features</a>
     <a href="#faq">FAQ</a>
@@ -339,6 +340,33 @@ footer p{margin-bottom:.4rem}
     <tr><td>Hibernation</td><td>Suspend-to-disk on a zvol swap</td></tr>
     <tr><td>Fresh installs &amp; recovery</td><td><code>omarchy-bootstrap-zfs</code>: pool, datasets, encryption, ZBM — from the ISO or any live environment</td></tr>
   </table>
+  </div>
+</section>
+
+<section id="docs">
+  <h2>Documentation</h2>
+  <p class="dim">Upstream declined to support ZFS and asked for it to be written
+  up somewhere others can find it. This is that write-up — three routes, each
+  tested end to end, including the parts that go wrong.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Fresh root-on-ZFS install</h3>
+      <p>Boot the ISO, answer a few questions, get an encrypted ZFS root with
+      ZFSBootMenu and one passphrase prompt.</p>
+      <p><a href="/docs/fresh-install">Read the guide →</a></p>
+    </div>
+    <div class="card">
+      <h3>Existing install → ZFS root</h3>
+      <p>No in-place conversion exists. The two safe routes, and how to keep your
+      current install bootable while you move.</p>
+      <p><a href="/docs/zfs-root-existing">Read the guide →</a></p>
+    </div>
+    <div class="card">
+      <h3>Keep btrfs, add ZFS</h3>
+      <p>Leave the root filesystem alone; put <code>/home</code> or a data pool
+      on ZFS, with snapshots, scrubs and replication.</p>
+      <p><a href="/docs/zfs-home">Read the guide →</a></p>
+    </div>
   </div>
 </section>
 
