@@ -43,9 +43,8 @@
 <p class="crumb"><a href="/docs/">Docs</a> → Existing install → ZFS root</p>
 <h1>Already running Omarchy? <em>Getting to a ZFS root</em></h1>
 <p class="lede">You have a working Omarchy install on btrfs and you want ZFS
-underneath it. This page is the honest version: what is actually possible, the
-two routes that work, and how to keep your current install bootable while you
-move.</p>
+underneath it. Here is what is possible, the two routes that work, and how to
+keep your current install bootable while you move.</p>
 
 <div class="danger">
   <strong>There is no in-place btrfs → ZFS conversion</strong>
@@ -66,15 +65,15 @@ filesystem you can snapshot and roll back forever after.</p>
 <table>
   <tr><th>Route</th><th>You need</th><th>Downtime</th><th>Safety net</th></tr>
   <tr>
-    <td><strong>A — Reinstall &amp; restore</strong></td>
+    <td><strong>A. Reinstall &amp; restore</strong></td>
     <td>One disk + an external drive for the backup</td>
     <td>The whole job; the machine is unusable in between</td>
     <td>Your backup. That is all. Verify it before you start.</td>
   </tr>
   <tr>
-    <td><strong>B — Second disk</strong></td>
+    <td><strong>B. Second disk</strong></td>
     <td>A spare internal disk (or an M.2 slot free)</td>
-    <td>Minutes — you boot back into the old install any time</td>
+    <td>Minutes. You boot back into the old install any time</td>
     <td>The old install stays intact and bootable until you erase it.</td>
   </tr>
 </table>
@@ -86,7 +85,7 @@ of the drive.</p>
 <h2 id="confirm">1. Confirm what you are on</h2>
 <pre><code>findmnt -no FSTYPE /            # btrfs, probably
 pacman -Q omarchy               # must be a Quattro (4.x) version
-[ -d /sys/firmware/efi ] &amp;&amp; echo UEFI || echo "BIOS — ZFSBootMenu needs UEFI"
+[ -d /sys/firmware/efi ] &amp;&amp; echo UEFI || echo "BIOS. ZFSBootMenu needs UEFI"
 mokutil --sb-state              # want: SecureBoot disabled
 lsblk -o NAME,SIZE,MODEL,TRAN,MOUNTPOINTS</code></pre>
 <p>If <code>pacman -Q omarchy</code> reports nothing, you are on a pre-Quattro
@@ -123,20 +122,19 @@ crontab -l           > crontab.txt 2>/dev/null || true</code></pre>
 </div>
 
 <h2 id="install">3. Install root-on-ZFS</h2>
-<p>Both routes use the ISO from <a href="/docs/fresh-install">route 1</a> —
-follow that page for the download, the USB stick, the 15-second question and the
+<p>Both routes use the ISO from <a href="/docs/fresh-install">route 1</a>. Follow that page for the download, the USB stick, the 15-second question and the
 installer's prompts. The only difference is which disk you point it at.</p>
 
-<h3>Route A — same disk</h3>
+<h3>Route A. Same disk</h3>
 <p>Verify the backup <em>from another machine or a live USB</em> first: mount it,
 open a few files, check the sizes look sane. Then install to the disk and erase
 the old system. Point of no return; there is no undo.</p>
 
-<h3>Route B — second disk, old install untouched</h3>
+<h3>Route B. Second disk, old install untouched</h3>
 <ol>
   <li>Shut down, fit the new disk, boot the ISO.</li>
   <li>At the disk selection step, pick <strong>the new disk</strong>. Read the
-  destructive-confirmation list carefully — it names the exact devices, and this
+  destructive-confirmation list carefully. It names the exact devices, and this
   is the moment to catch a mix-up.</li>
   <li>Install as normal, using the same username as before so restoring
   <code>/home/&lt;user&gt;</code> lands with the right ownership.</li>
@@ -145,7 +143,7 @@ the old system. Point of no return; there is no undo.</p>
   <strong>Both disks now have an EFI partition</strong>
   <p>Your firmware will have entries for Limine (old install) and ZFSBootMenu
   (new one). <code>omarchy-zfs</code> keeps ZFSBootMenu first in the EFI boot
-  order on every package transaction, but it <strong>only ever reorders — it
+  order on every package transaction, but it <strong>only ever reorders. It
   never deletes another bootloader's entry</strong>, because which systems stay
   bootable is your call. So the old install remains one firmware-menu keypress
   away. Check with <code>efibootmgr</code>.</p>
@@ -165,12 +163,12 @@ sudo rsync -aHAX --numeric-ids --info=progress2 \
      /run/media/pete/backup/home/pete/ /home/pete/</code></pre>
 <div class="warn">
   <strong>Make sure <code>/home</code> is really mounted first</strong>
-  <p><code>mountpoint -q /home &amp;&amp; echo mounted</code> — not
-  <code>findmnt /home</code>, which reports the nearest <em>enclosing</em> mount
-  and answers "mounted" for a plain directory. If you rsync 200 GB into
-  <code>/home</code> while its dataset is unmounted, the data lands in the root
-  dataset and vanishes under the real mount at the next boot. This exact trap
-  cost this project a full day.</p>
+  <p>Use <code>mountpoint -q /home &amp;&amp; echo mounted</code>, not
+  <code>findmnt /home</code>. <code>findmnt</code> reports the nearest
+  <em>enclosing</em> mount, so it answers "mounted" for a plain directory. If you
+  rsync 200 GB into <code>/home</code> while its dataset is unmounted, the data
+  lands in the root dataset and vanishes under the real mount at the next
+  boot.</p>
 </div>
 <p>Fix ownership if the UID changed, then put the packages back:</p>
 <pre><code>sudo chown -R pete:pete /home/pete
@@ -190,7 +188,7 @@ that no longer exist or now come from a different repo. Read pacman's complaints
 rather than forcing past them.</p>
 
 <h2>5. Take the first snapshot</h2>
-<p>You are on ZFS now — use it before you customise anything:</p>
+<p>You are on ZFS now. Use it before you customise anything:</p>
 <pre><code>sudo zfs snapshot -r zroot@migrated
 zfs list -t snapshot</code></pre>
 <p>From here on, every package transaction takes a pre-upgrade snapshot
@@ -207,14 +205,13 @@ zpool status zroot        # watch it resilver</code></pre>
 <pre><code>sudo zpool create -o ashift=12 -O compression=zstd -O mountpoint=none backup /dev/disk/by-id/&lt;old-disk&gt;
 sudo zfs snapshot -r zroot@$(date +%F)
 sudo zfs send -R zroot@$(date +%F) | sudo zfs receive -u -d backup</code></pre>
-<p>If you attach it as a mirror, remember the old EFI partition is gone —
-re-check <code>efibootmgr</code> and keep at least one working ZFSBootMenu entry.</p>
+<p>If you attach it as a mirror, remember the old EFI partition is gone. Re-check <code>efibootmgr</code> and keep at least one working ZFSBootMenu entry.</p>
 
 <h2>Why not do it in place?</h2>
 <p>People ask whether they can shrink btrfs, build a pool in the freed space,
 copy the system across, and switch. It is technically possible and it is a bad
 trade: you are doing a live copy of a running system, then hand-assembling the
-parts the installer would have got right — the hostid inside the initramfs, the
+parts the installer would have got right. The hostid inside the initramfs, the
 <code>zfs</code> mkinitcpio hook ordering, the ESP contents, the ZFSBootMenu EFI
 entry and the boot-environment layout. Each one is a silent unbootable-system
 bug if you get it slightly wrong, and you will be debugging it with no working
@@ -223,21 +220,19 @@ the evening you would spend.</p>
 
 <h2>Alternatives worth considering</h2>
 <ul>
-  <li><strong>Keep btrfs, add ZFS for data</strong> — if what you actually want
-  is snapshots and replication of your <em>files</em>, route 3 gets you that
-  with no reinstall at all:
-  <a href="/docs/zfs-home">ZFS on /home or a data drive</a>.</li>
-  <li><strong>Stay on btrfs</strong> — a genuine answer. Upstream's snapper +
-  limine setup gives bootable snapshots and is the tested path. Switch because
-  you want ZFS's encryption, send/receive or checksums, not because ZFS is
-  fashionable.</li>
+  <li><strong>Keep btrfs, add ZFS for data.</strong> If what you want is
+  snapshots and replication of your <em>files</em>, route 3 gets you that with no
+  reinstall: <a href="/docs/zfs-home">ZFS on /home or a data drive</a>.</li>
+  <li><strong>Stay on btrfs.</strong> Upstream's snapper and limine setup gives
+  bootable snapshots and it is the tested path. Switch if you want ZFS
+  encryption, send/receive or checksums.</li>
 </ul>
 
 <footer>
   <p>omarchy-zfs is an independent project, not affiliated with or endorsed by
   Basecamp or the Omarchy maintainers.</p>
   <p>Migrated and hit something this page missed?
-  <a href="https://github.com/peteonrails/omarchy-zfs/issues">Tell us</a> — it
+  <a href="https://github.com/peteonrails/omarchy-zfs/issues">Tell us</a>. It
   belongs here.</p>
 </footer>
 </main>

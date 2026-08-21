@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>omarchy-zfs — Root-on-ZFS + ZFSBootMenu for Omarchy Linux</title>
-<meta name="description" content="Run Omarchy Linux (Quattro, 4.x+) on a ZFS root. Native pacman package with boot-safe updates, pre-upgrade snapshots, and ZFSBootMenu — plus an installer ISO for fresh machines.">
+<title>omarchy-zfs. Root-on-ZFS + ZFSBootMenu for Omarchy Linux</title>
+<meta name="description" content="Run Omarchy Linux (Quattro, 4.x+) on a ZFS root. Native pacman package with boot-safe updates, pre-upgrade snapshots, and ZFSBootMenu. Plus an installer ISO for fresh machines.">
 <link rel="canonical" href="https://omarchy-zfs.com/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9F%A9%3C/text%3E%3C/svg%3E">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://omarchy-zfs.com/">
-<meta property="og:title" content="omarchy-zfs — Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
+<meta property="og:title" content="omarchy-zfs. Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
 <meta property="og:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. AUR package + installer ISO.">
 <meta property="og:site_name" content="omarchy-zfs">
 <meta property="og:image" content="https://omarchy-zfs.com/assets/fastfetch-zfs.png">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="fastfetch on an Omarchy desktop showing every filesystem mounted as zfs">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://omarchy-zfs.com/assets/fastfetch-zfs.png">
-<meta name="twitter:title" content="omarchy-zfs — Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
+<meta name="twitter:title" content="omarchy-zfs. Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
 <meta name="twitter:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. AUR package + installer ISO.">
 
 <script type="application/ld+json">
@@ -60,12 +60,12 @@
         {
           "@type": "Question",
           "name": "Why ZFS instead of btrfs on Omarchy?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Native whole-pool encryption without a LUKS layer, raw encrypted send — snapshots replicate to a TrueNAS box or S3 without ever being decrypted — bootable snapshots via ZFSBootMenu, end-to-end checksums with self-healing scrubs, and proven multi-disk growth (mirrors, raidz) without btrfs's RAID5/6 write-hole caveats. One filesystem and one toolset from laptop to NAS to offsite." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Native whole-pool encryption without a LUKS layer, raw encrypted send. Snapshots replicate to a TrueNAS box or S3 without ever being decrypted. Bootable snapshots via ZFSBootMenu, end-to-end checksums with self-healing scrubs, and proven multi-disk growth (mirrors, raidz) without btrfs's RAID5/6 write-hole caveats. One filesystem and one toolset from laptop to NAS to offsite." }
         },
         {
           "@type": "Question",
           "name": "Which Omarchy versions does omarchy-zfs support?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Omarchy Quattro (4.x) and later — the versions served entirely from Arch packages. Earlier Omarchy releases used a different install model and are not supported." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Omarchy Quattro (4.x) and later. The versions served entirely from Arch packages. Earlier Omarchy releases used a different install model and are not supported." }
         },
         {
           "@type": "Question",
@@ -90,7 +90,7 @@
 
 <style>
 :root{
-  /* Alpenglow — palette matched to the hero fastfetch screenshot */
+  /* Alpenglow. Palette matched to the hero fastfetch screenshot */
   --bg:#1b1a19; --bg2:#211f1e; --panel:#262525; --line:#3a3835;
   --fg:#fcfbf8; --dim:#a3a19c; --accent:#9fc957; --accent2:#8ba6df;
   --mono:ui-monospace,'JetBrains Mono','Cascadia Code',Menlo,Consolas,monospace;
@@ -163,7 +163,7 @@ footer p{margin-bottom:.4rem}
   <p class="sub">A native Arch package that makes <a href="https://omarchy.org">Omarchy</a>
   (Quattro, 4.x or later) ZFS-safe: snapshots before every update, rollback from the boot
   menu with <a href="https://zfsbootmenu.org/">ZFSBootMenu</a>, whole-pool native
-  encryption — no LVM.</p>
+  encryption. No LVM.</p>
   <img src="assets/fastfetch-zfs.png"
        alt="fastfetch on an Omarchy desktop: the Omarchy logo beside hardware info where every filesystem line ends in zfs"
        width="1694" height="1337" loading="eager"
@@ -196,11 +196,10 @@ footer p{margin-bottom:.4rem}
 
 <section id="why-zfs">
   <h2>Why ZFS?</h2>
-  <p>Omarchy is opinionated, and that's exactly why it's good — btrfs with snapper is a
+  <p>Omarchy is opinionated, and that's exactly why it's good. Using btrfs with snapper is a
   solid default that serves most people well. But a few of us have a storage world that
   already runs on ZFS: a TrueNAS box in the closet, ZFS backup targets, encrypted
-  replicas offsite. For that (admittedly niche) crowd, the laptop is the odd one out —
-  this project brings it into the fold.</p>
+  replicas offsite. For that (admittedly niche) crowd, the laptop is the odd one out. This project brings it into the fold.</p>
   <div class="cards">
     <div class="card">
       <svg class="icon" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -212,8 +211,8 @@ footer p{margin-bottom:.4rem}
       </svg>
       <h3>Native encryption</h3>
       <p>Encryption is a dataset property, not a LUKS layer underneath the filesystem.
-      The whole pool is protected — <code>/etc</code>, <code>/var</code>, logs, credentials,
-      machine-id — and ZFSBootMenu prompts for the key at boot.</p>
+      The whole pool is protected. <code>/etc</code>, <code>/var</code>, logs, credentials,
+      machine-id. And ZFSBootMenu prompts for the key at boot.</p>
     </div>
     <div class="card">
       <svg class="icon" viewBox="0 0 48 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -228,7 +227,7 @@ footer p{margin-bottom:.4rem}
       </svg>
       <h3>Backups that stay encrypted</h3>
       <p><code>zfs send --raw</code> replicates snapshots without ever decrypting them.
-      Send to a TrueNAS box, S3, or a friend's server — the key never leaves your
+      Send to a TrueNAS box, S3, or a friend's server. The key never leaves your
       machine, so where the backup lives stops mattering.</p>
     </div>
     <div class="card">
@@ -254,7 +253,7 @@ footer p{margin-bottom:.4rem}
       </svg>
       <h3>Self-healing data</h3>
       <p>Every block is checksummed end to end. Corruption is caught on read and repaired
-      from redundancy — and the package ships a monthly <code>zpool scrub</code> timer, so
+      from redundancy. And the package ships a monthly <code>zpool scrub</code> timer, so
       bitrot is found before you go looking for the file.</p>
     </div>
     <div class="card">
@@ -268,7 +267,7 @@ footer p{margin-bottom:.4rem}
         <path d="M7 15.5c0 3 3.5 5 9 5s9-2 9-5" stroke-dasharray="2.5 3"/>
       </svg>
       <h3>One pool, many disks</h3>
-      <p>Start on a single NVMe, grow into mirrors or raidz when you outgrow it — the
+      <p>Start on a single NVMe, grow into mirrors or raidz when you outgrow it. The
       installer handles multi-disk topologies out of the box, with none of btrfs's
       RAID5/6 write-hole caveats.</p>
     </div>
@@ -282,7 +281,7 @@ footer p{margin-bottom:.4rem}
       </svg>
       <h3>Boot any snapshot</h3>
       <p>ZFSBootMenu shows snapshots and boot environments at boot. A bad update is a
-      reboot away from undone — no live USB, no chroot.</p>
+      reboot away from undone. No live USB, no chroot.</p>
     </div>
   </div>
 </section>
@@ -292,7 +291,7 @@ footer p{margin-bottom:.4rem}
   <p class="dim">Stock Omarchy assumes btrfs: updates rewrite the initramfs config without the
   <code>zfs</code> hook, snapper aborts on non-btrfs roots, and Limine can push itself ahead of
   ZFSBootMenu in the EFI boot order. Each one ends in a system that won't boot or won't update.
-  omarchy-zfs fixes all three with pacman hooks that run on every transaction — everything is a
+  omarchy-zfs fixes all three with pacman hooks that run on every transaction. Everything is a
   package-owned file, so <code>omarchy update</code> can't strip it.</p>
 
   <figure style="margin:1.6rem auto;max-width:600px" aria-label="omarchy-zfs is a layer on top of stock Omarchy, which runs on Arch Linux, on an encrypted ZFS pool with ZFSBootMenu">
@@ -300,18 +299,18 @@ footer p{margin-bottom:.4rem}
     <!-- top layer: this package -->
     <rect x="40" y="26" width="340" height="56" rx="8" fill="#9fc957"/>
     <text x="60" y="50" font-size="17" font-weight="700" fill="#222a10">omarchy-zfs</text>
-    <text x="60" y="70" font-size="12.5" fill="#45521f">this package — a layer, not a fork</text>
+    <text x="60" y="70" font-size="12.5" fill="#45521f">this package. A layer, not a fork</text>
     <!-- omarchy -->
     <rect x="40" y="90" width="340" height="56" rx="8" fill="#262525" stroke="#3a3835"/>
     <text x="60" y="114" font-size="16" font-weight="600" fill="#fcfbf8">Omarchy Quattro</text>
-    <text x="60" y="133" font-size="12.5" fill="#a3a19c">stock, unmodified — normal updates</text>
+    <text x="60" y="133" font-size="12.5" fill="#a3a19c">stock, unmodified. Normal updates</text>
     <!-- arch -->
     <rect x="40" y="154" width="340" height="50" rx="8" fill="#262525" stroke="#3a3835"/>
     <text x="60" y="184" font-size="16" font-weight="600" fill="#fcfbf8">Arch Linux</text>
     <!-- zfs foundation -->
     <rect x="24" y="212" width="372" height="62" rx="8" fill="#21231b" stroke="#8ba6df"/>
     <text x="60" y="238" font-size="16" font-weight="600" fill="#8ba6df">Encrypted ZFS pool</text>
-    <text x="60" y="258" font-size="12.5" fill="#a3a19c">booted by ZFSBootMenu — snapshots selectable at boot</text>
+    <text x="60" y="258" font-size="12.5" fill="#a3a19c">booted by ZFSBootMenu. Snapshots selectable at boot</text>
     <!-- annotations -->
     <g stroke="#3a3835" fill="none">
       <path d="M380 44 H436"/>
@@ -338,7 +337,7 @@ footer p{margin-bottom:.4rem}
     <tr><td>Snapper cleanup</td><td>Removes btrfs-only snapper configs that abort <code>omarchy update</code> on ZFS</td></tr>
     <tr><td>Pool health</td><td>Monthly <code>zpool scrub</code> timer</td></tr>
     <tr><td>Hibernation</td><td>Suspend-to-disk on a zvol swap</td></tr>
-    <tr><td>Fresh installs &amp; recovery</td><td><code>omarchy-bootstrap-zfs</code>: pool, datasets, encryption, ZBM — from the ISO or any live environment</td></tr>
+    <tr><td>Fresh installs &amp; recovery</td><td><code>omarchy-bootstrap-zfs</code>: pool, datasets, encryption, ZBM. From the ISO or any live environment</td></tr>
   </table>
   </div>
 </section>
@@ -346,8 +345,8 @@ footer p{margin-bottom:.4rem}
 <section id="docs">
   <h2>Documentation</h2>
   <p class="dim">Upstream declined to support ZFS and asked for it to be written
-  up somewhere others can find it. This is that write-up — three routes, each
-  tested end to end, including the parts that go wrong.</p>
+  up somewhere others can find it. Three routes, each one tested on Omarchy
+  Quattro.</p>
   <div class="cards">
     <div class="card">
       <h3>Fresh root-on-ZFS install</h3>
@@ -379,7 +378,7 @@ footer p{margin-bottom:.4rem}
   </details>
   <details>
     <summary>Which Omarchy versions are supported?</summary>
-    <div><p>Omarchy Quattro (4.x) and later — the releases served entirely from Arch
+    <div><p>Omarchy Quattro (4.x) and later. The releases served entirely from Arch
     packages, which is what makes a clean support layer possible. Earlier Omarchy
     versions used a different install model and aren't supported.</p></div>
   </details>
@@ -414,7 +413,7 @@ footer p{margin-bottom:.4rem}
      <a href="https://aur.archlinux.org/packages/omarchy-zfs">AUR</a> ·
      <a href="https://zfsbootmenu.org/">ZFSBootMenu</a> ·
      <a href="https://omarchy.org">Omarchy</a></p>
-  <p>MIT licensed. Independent community project — not affiliated with Omarchy, 37signals, or OpenZFS.</p>
+  <p>MIT licensed. Independent community project. Not affiliated with Omarchy, 37signals, or OpenZFS.</p>
 </footer>
 </div>
 

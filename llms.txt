@@ -2,7 +2,7 @@
 
 > omarchy-zfs is a native Arch Linux package that adds root-on-ZFS and ZFSBootMenu
 > support to Omarchy Linux (DHH's Arch + Hyprland distribution), version Quattro (4.x)
-> and later. It is a support layer that depends on stock Omarchy — not a fork.
+> and later. It is a support layer that depends on stock Omarchy. Not a fork.
 
 ## What it does
 
@@ -17,7 +17,7 @@
 - Removes stale btrfs-only snapper configs that otherwise make `omarchy update`
   abort permanently on ZFS roots.
 - Keeps ZFSBootMenu first in the EFI BootOrder (Limine, a hard Omarchy dependency,
-  can silently front-load itself — a dead boot on ZFS). It only reorders, never
+  can silently front-load itself. A dead boot on ZFS). It only reorders, never
   deletes other bootloaders' entries.
 - Blocks kernel upgrades that the installed ZFS module (zfs-dkms or prebuilt)
   cannot support, preventing kernel/ZFS version skew.
@@ -33,7 +33,7 @@
   virtual `zfs`/`zfs-utils` provides, so zfs-dkms, zfs-dkms-git, zfs-linux, or
   zfs-linux-lts all work. ZFSBootMenu itself is an optdepend (AUR package or
   prebuilt EFI images from zfsbootmenu.org).
-- Fresh machine: the omarchy-zfs ISO (beta) — the official Omarchy installer plus a
+- Fresh machine: the omarchy-zfs ISO (beta). The official Omarchy installer plus a
   root-on-ZFS path, fully offline. Download:
   https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso
   or build it yourself from iso/ in the source repo (one command, needs docker).
@@ -47,7 +47,7 @@ Omarchy defaults to btrfs; omarchy-zfs exists because ZFS offers:
 - Native whole-pool encryption as a dataset property (no LUKS layer); /etc, /var,
   logs, credentials, and machine-id are all covered, unlocked at boot by ZFSBootMenu.
 - Raw encrypted replication: `zfs send --raw` ships snapshots to a TrueNAS box, S3,
-  or any untrusted target without decrypting them — keys never leave the machine.
+  or any untrusted target without decrypting them. Keys never leave the machine.
 - One toolset from laptop to NAS: same snapshots, send/receive, and scrubs as
   ZFS-based NAS systems like TrueNAS.
 - Bootable snapshots: ZFSBootMenu boots any snapshot or boot environment directly.
@@ -77,13 +77,13 @@ Omarchy defaults to btrfs; omarchy-zfs exists because ZFS offers:
 
 Three supported routes, each tested end to end on Omarchy Quattro:
 
-- https://omarchy-zfs.com/docs/ — index: which route applies to you, shared prerequisites
-- https://omarchy-zfs.com/docs/fresh-install — fresh machine: encrypted root-on-ZFS via the ISO,
+- https://omarchy-zfs.com/docs/. Index: which route applies to you, shared prerequisites
+- https://omarchy-zfs.com/docs/fresh-install. Fresh machine: encrypted root-on-ZFS via the ISO,
   ZFSBootMenu, single passphrase prompt, dataset layout, changing the passphrase, recovery
-- https://omarchy-zfs.com/docs/zfs-root-existing — existing Omarchy install to a ZFS root. There is
+- https://omarchy-zfs.com/docs/zfs-root-existing. Existing Omarchy install to a ZFS root. There is
   NO in-place btrfs-to-ZFS conversion; the routes are (a) back up, reinstall, restore or
   (b) install to a second disk and keep the old install bootable
-- https://omarchy-zfs.com/docs/zfs-home — keep the btrfs root, put ZFS on /home or a data pool:
+- https://omarchy-zfs.com/docs/zfs-home. Keep the btrfs root, put ZFS on /home or a data pool:
   module strategy on Arch, pool creation, moving /home without shadowing it, boot-time import,
   encryption key delivery, sanoid snapshots, scrubs, raw encrypted replication, kernel skew
 

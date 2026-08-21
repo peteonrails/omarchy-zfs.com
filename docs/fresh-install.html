@@ -9,7 +9,7 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://omarchy-zfs.com/docs/fresh-install">
 <meta property="og:title" content="Fresh root-on-ZFS Omarchy install">
-<meta property="og:description" content="Install Omarchy Quattro onto an encrypted ZFS root with ZFSBootMenu — tested end to end.">
+<meta property="og:description" content="Install Omarchy Quattro onto an encrypted ZFS root with ZFSBootMenu.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
 <link rel="stylesheet" href="/docs/docs.css">
 <script type="application/ld+json">
@@ -55,7 +55,7 @@ passphrase prompt and boot environments you can roll back to.</p>
   <ol>
     <li><a href="#download">Download and verify the ISO</a></li>
     <li><a href="#write">Write it to a USB stick</a></li>
-    <li><a href="#boot">Boot it — and catch the 15-second question</a></li>
+    <li><a href="#boot">Boot it, and catch the 15-second question</a></li>
     <li><a href="#questions">Answer the installer</a></li>
     <li><a href="#firstboot">First boot</a></li>
     <li><a href="#verify">Verify what you got</a></li>
@@ -67,7 +67,7 @@ passphrase prompt and boot environments you can roll back to.</p>
 <div class="warn">
   <strong>Status: beta</strong>
   <p>The 2026.08.20.1 image was taken through this exact sequence before
-  publishing — fresh disk, fresh UEFI variables, no manual repair — ending at a
+  publishing. Fresh disk, fresh UEFI variables, no manual repair. Ending at a
   logged-in desktop. That is the bar for a release, rather than "it worked once
   on the author's machine". It is still young software that repartitions disks.
   Do not point it at a machine holding the only copy of anything.</p>
@@ -77,11 +77,10 @@ passphrase prompt and boot environments you can roll back to.</p>
 <pre><code>curl -LO https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso
 curl -LO https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso.sha256
 sha256sum -c omarchy-zfs-2026.08.20.1-x86_64-quattro.iso.sha256</code></pre>
-<p>You want <code>OK</code>. About 6.2 GB — it carries a full offline package
+<p>You want <code>OK</code>. About 6.2 GB. It carries a full offline package
 mirror so the install never touches the network.</p>
 <p class="dim">Prefer to build it yourself? <code>iso/build.sh</code> in the repo
-clones the official Omarchy ISO at a pinned commit and applies a small overlay —
-no fork. It needs Docker and about 15 GB.</p>
+clones the official Omarchy ISO at a pinned commit and applies a small overlay. No fork. It needs Docker and about 15 GB.</p>
 
 <h2 id="write">2. Write it to a USB stick</h2>
 <pre><code># Find the stick. Get this wrong and you erase the wrong disk.
@@ -96,7 +95,7 @@ sudo dd if=omarchy-zfs-2026.08.20.1-x86_64-quattro.iso of=/dev/sdX bs=4M \
   <code>/dev/sdb1</code>).</p>
 </div>
 
-<h2 id="boot">3. Boot it — and catch the 15-second question</h2>
+<h2 id="boot">3. Boot it, and catch the 15-second question</h2>
 <p>Boot the stick in <strong>UEFI</strong> mode with <strong>Secure Boot
 off</strong>. The live environment comes up and asks:</p>
 <pre><code>Install with root-on-ZFS + ZFSBootMenu (experimental)?
@@ -105,7 +104,7 @@ off</strong>. The live environment comes up and asks:</p>
 <div class="warn">
   <strong>The default is No, and it times out in 15 seconds</strong>
   <p>Press <kbd>y</kbd>. If you miss it, the stock Omarchy installer takes over
-  and you get a normal btrfs install — which is a perfectly good outcome, just
+  and you get a normal btrfs install. Which is a perfectly good outcome, just
   not this one. Reboot the stick to try again.</p>
 </div>
 
@@ -115,7 +114,7 @@ off</strong>. The live environment comes up and asks:</p>
 <table>
   <tr><th>Question</th><th>What to pick</th></tr>
   <tr><td>Pool mode</td><td>Create a new pool. (The other option adopts a pool
-      you already made — useful for recovery, see
+      you already made. Useful for recovery, see
       <a href="/docs/zfs-root-existing">route 2</a>.)</td></tr>
   <tr><td>Pool topology</td><td><code>single</code>, <code>mirror</code>,
       <code>raidz1</code>, <code>raidz2</code>, <code>raidz3</code>. One disk
@@ -125,9 +124,9 @@ off</strong>. The live environment comes up and asks:</p>
       Everything on it is destroyed.</td></tr>
   <tr><td>Wipe confirmation</td><td>It lists the exact devices. Read the list.</td></tr>
   <tr><td><strong>Pool passphrase</strong> (twice, ≥8 chars)</td>
-      <td>This is the encryption passphrase <em>and</em> your login password —
-      deliberately, so there is one secret to remember on day one. You can split
-      them later; see <a href="#passphrase">below</a>.</td></tr>
+      <td>This is the encryption passphrase and your login password, so there
+      is one secret to remember on day one. You can split them later. See
+      <a href="#passphrase">below</a>.</td></tr>
   <tr><td>Hostname [omarchy]</td><td>Anything.</td></tr>
   <tr><td>Timezone [UTC]</td><td>e.g. <code>America/New_York</code>.</td></tr>
   <tr><td>Locale [en_US.UTF-8]</td><td>Anything valid.</td></tr>
@@ -141,10 +140,10 @@ noticing:</p>
 ✓ Verified: pool key embedded in the in-pool initramfs (single passphrase prompt)
 ✓ Boot-readiness verified: kernel+initramfs pairs, ZBM image, hostid</code></pre>
 <p>If instead you see <em>“pool key is NOT embedded”</em>, the install is still
-fine — you will simply be asked for the passphrase twice at boot. If a
+fine. You will simply be asked for the passphrase twice at boot. If a
 boot-readiness check fails, the installer <strong>refuses to finish</strong> and
-leaves everything mounted so you can look around. That is deliberate: it would
-rather stop than hand you a system that cannot boot.</p>
+leaves everything mounted so you can look around. It stops rather than hand you a
+system that cannot boot.</p>
 
 <h3>What it builds</h3>
 <p>A GPT disk with a 1 GB EFI partition and the rest given to a pool named
@@ -156,12 +155,12 @@ rather stop than hand you a system that cannot boot.</p>
   -O relatime=on -O atime=off \
   -O encryption=aes-256-gcm -O keyformat=passphrase  zroot ...</code></pre>
 <p><code>compatibility=openzfs-2.4-linux</code> caps the feature flags to what
-ZFSBootMenu release builds can read — a pool with newer features enabled is a
+ZFSBootMenu release builds can read. A pool with newer features enabled is a
 pool ZBM cannot open.</p>
 <div class="tablewrap">
 <table>
   <tr><th>Dataset</th><th>Mounted at</th><th>Why separate</th></tr>
-  <tr><td><code>zroot/ROOT/default</code></td><td><code>/</code></td><td>The boot environment. <code>canmount=noauto</code> — ZFSBootMenu chooses it.</td></tr>
+  <tr><td><code>zroot/ROOT/default</code></td><td><code>/</code></td><td>The boot environment. <code>canmount=noauto</code>. ZFSBootMenu chooses it.</td></tr>
   <tr><td><code>zroot/data/home</code></td><td><code>/home</code></td><td>Survives reinstalling or rolling back the OS.</td></tr>
   <tr><td><code>zroot/data/root</code></td><td><code>/root</code></td><td>Same, for root's home.</td></tr>
   <tr><td><code>zroot/var/log</code>, <code>zroot/var/log/journal</code></td><td><code>/var/log</code></td><td>Logs should not vanish when you roll back the OS. <code>journal</code> gets <code>acltype=posixacl</code> because journald needs it.</td></tr>
@@ -175,7 +174,7 @@ pool ZBM cannot open.</p>
 <p>Remove the USB stick and reboot. You should see, in order:</p>
 <ol>
   <li><strong>ZFSBootMenu</strong> asking
-  <code>Enter passphrase for 'zroot':</code> — type the passphrase you chose.</li>
+  <code>Enter passphrase for 'zroot':</code>. Type the passphrase you chose.</li>
   <li>A brief boot, then the Omarchy greeter.</li>
   <li>Log in with the <em>same</em> passphrase.</li>
 </ol>
@@ -188,7 +187,7 @@ there. The key never touches the unencrypted EFI partition, and
   <strong>ZFSBootMenu is worth learning</strong>
   <p>At the ZBM menu you can pick an older boot environment, roll a snapshot
   back before booting it, edit the kernel command line, or drop to a recovery
-  shell with your pool imported — all before the OS starts. This is the thing a
+  shell with your pool imported. All before the OS starts. This is the thing a
   btrfs+snapper setup gives you too, and the reason a ZFS root beats
   ZFS-on-/home if you want it.</p>
 </div>
@@ -201,7 +200,7 @@ zpool get compatibility zroot    # openzfs-2.4-linux
 systemctl is-enabled zfs-import-cache zfs-mount zfs.target
 systemctl list-timers omarchy-zfs-scrub.timer</code></pre>
 <p>All the ZFS services must be <code>enabled</code>. If any says
-<code>disabled</code>, enable it — a pool that imports but never mounts its
+<code>disabled</code>, enable it. A pool that imports but never mounts its
 datasets produces a system with no <code>/home</code>, and the symptom is a
 greeter that accepts your password and then bounces you straight back. It looks
 exactly like a wrong password.</p>
@@ -225,7 +224,7 @@ sudo zfs change-key -o keylocation=file:///etc/zfs/zroot.key zroot
 # 3. Rebuild the initramfs + ZFSBootMenu so the embedded key matches
 sudo omarchy-refresh-zbm</code></pre>
 <div class="warn">
-  <strong>Test before you rely on it — and note what is not tested here</strong>
+  <strong>Test before you rely on it. And note what is not tested here</strong>
   <p>The install-and-boot path above is verified on every image we publish. This
   rotation procedure is <em>not</em> in that automated matrix: it follows
   OpenZFS's documented behaviour for <code>change-key</code> (the new wrapping
@@ -233,7 +232,7 @@ sudo omarchy-refresh-zbm</code></pre>
   machine rather than take it on faith.</p>
   <p>So: reboot once and confirm the new passphrase unlocks at ZFSBootMenu
   <strong>before</strong> you discard the old one. If you skip step 3, ZBM will
-  want the new passphrase while the initramfs still carries the old key — that
+  want the new passphrase while the initramfs still carries the old key. That
   is a second prompt, not a lockout, and
   <code>sudo omarchy-refresh-zbm</code> fixes it.</p>
 </div>
@@ -242,7 +241,7 @@ sudo omarchy-refresh-zbm</code></pre>
 <h3>“Datasets above are not mounted; refusing to continue”</h3>
 <p>The installer's own gate. It means a dataset's mountpoint would have been
 shadowed, so writes would land in the wrong dataset and disappear at boot.
-Nothing has been unmounted — you can inspect. Upgrade to the current ISO; this
+Nothing has been unmounted. You can inspect. Upgrade to the current ISO; this
 was a real bug in the 2026.08.20 image, fixed in 2026.08.20.1.</p>
 
 <h3>Asked for the passphrase twice</h3>
@@ -253,11 +252,10 @@ sudo omarchy-refresh-zbm          # or do both plus ZBM in one step</code></pre>
 <h3>“pool was previously in use from another system”</h3>
 <p>Usually <em>not</em> a problem: ZFSBootMenu leaves the pool imported when it
 hands off to the kernel, and the import retries and succeeds. If a boot really
-does stop here, the hostid in the initramfs disagrees with the pool label —
-compare <code>hostid</code> with what the message reports, and check
+does stop here, the hostid in the initramfs disagrees with the pool label. Compare <code>hostid</code> with what the message reports, and check
 <code>/etc/hostid</code> exists. <code>omarchy-zfs</code> keeps
-<code>/etc/hostid</code> in every initramfs with a static mkinitcpio drop-in
-precisely so this stays boring.</p>
+<code>/etc/hostid</code> in every initramfs with a static mkinitcpio drop-in so
+this stays boring.</p>
 
 <h3>Emergency shell, no pool</h3>
 <p>Boot the ISO again, then:</p>
@@ -272,9 +270,8 @@ fix a password (<code>passwd &lt;user&gt;</code>), or read
 
 <h2>Next</h2>
 <ul>
-  <li><a href="/docs/zfs-home#snapshots">Snapshots, scrubs and replication</a> —
-  applies to a ZFS root too.</li>
-  <li><a href="/docs/zfs-home#kernel">Kernel upgrades and zfs-dkms</a> — the one
+  <li><a href="/docs/zfs-home#snapshots">Snapshots, scrubs and replication</a>. Applies to a ZFS root too.</li>
+  <li><a href="/docs/zfs-home#kernel">Kernel upgrades and zfs-dkms</a>. The one
   operational cost of ZFS you should understand before you depend on it.</li>
 </ul>
 

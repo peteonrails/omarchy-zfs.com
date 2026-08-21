@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ZFS on Omarchy — the three ways to do it | omarchy-zfs docs</title>
+<title>How to install ZFS on Omarchy | omarchy-zfs docs</title>
 <meta name="description" content="Complete, tested documentation for running ZFS on Omarchy Quattro: a fresh root-on-ZFS install, converting an existing Omarchy install to a ZFS root, or keeping btrfs and putting ZFS on /home or a data drive.">
 <link rel="canonical" href="https://omarchy-zfs.com/docs/">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://omarchy-zfs.com/docs/">
-<meta property="og:title" content="ZFS on Omarchy — the three ways to do it">
-<meta property="og:description" content="Tested, end-to-end documentation for root-on-ZFS, converting an existing install, and ZFS on /home with a btrfs root.">
+<meta property="og:title" content="How to install ZFS on Omarchy">
+<meta property="og:description" content="How to install root-on-ZFS, convert an existing install, or put ZFS on /home with a btrfs root.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
 <link rel="stylesheet" href="/docs/docs.css">
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
   "@type":"TechArticle",
-  "headline":"ZFS on Omarchy — the three ways to do it",
+  "headline":"How to install ZFS on Omarchy",
   "description":"Documentation for running ZFS on Omarchy Quattro: fresh root-on-ZFS install, converting an existing install to a ZFS root, or ZFS on /home alongside a btrfs root.",
   "url":"https://omarchy-zfs.com/docs/",
   "author":{"@type":"Person","name":"Pete Jackson"},
@@ -37,11 +37,10 @@
 </header>
 
 <main>
-<h1>ZFS on Omarchy: <em>three ways</em>, all of them documented</h1>
-<p class="lede">Omarchy ships on btrfs, and upstream has said plainly that it is
-staying that way. That does not mean you cannot run ZFS — it means nobody wrote
-down how. This is that write-up: three routes, each tested end to end on Omarchy
-Quattro, including the parts that go wrong.</p>
+<h1>How To Install</h1>
+<p class="lede">Omarchy ships on btrfs and upstream is staying that way. You can
+still run ZFS. Nobody had written down how, so here are three routes, each one
+tested on Omarchy Quattro.</p>
 
 <h2>Which situation are you in?</h2>
 <div class="cards">
@@ -56,16 +55,15 @@ Quattro, including the parts that go wrong.</p>
   <div class="card">
     <h3>2. Existing Omarchy → ZFS root</h3>
     <p class="who">Already running Omarchy, want ZFS underneath it</p>
-    <p>There is no in-place btrfs→ZFS conversion — anyone who tells you
-    otherwise is selling something. Here is the safe way to get there, and how
-    to keep your old install bootable while you do.</p>
+    <p>There is no in-place btrfs to ZFS conversion. Here is the safe way to
+    get there, and how to keep your old install bootable while you do it.</p>
     <a class="btn" href="/docs/zfs-root-existing">Convert to a ZFS root →</a>
   </div>
   <div class="card">
     <h3>3. Keep btrfs, add ZFS</h3>
     <p class="who">Happy with your install, want ZFS for data</p>
     <p>Leave the root filesystem alone. Put ZFS on <code>/home</code>, a scratch
-    pool, or a big spinning array — with snapshots, scrubs, and
+    pool, or a big spinning array. With snapshots, scrubs, and
     <code>zfs send</code> to somewhere else.</p>
     <a class="btn" href="/docs/zfs-home">ZFS on /home or a data drive →</a>
   </div>
@@ -74,9 +72,7 @@ Quattro, including the parts that go wrong.</p>
 <div class="note">
   <strong>Not sure?</strong>
   <p>If you want bootable rollback of the whole operating system, you want a ZFS
-  root (routes 1 or 2). If you mainly want your <em>data</em> on ZFS —
-  snapshots, send/receive, checksums, a pool you already replicate to a NAS —
-  route 3 is less invasive and much easier to undo.</p>
+  root (routes 1 or 2). If you mainly want your <em>data</em> on ZFS. Snapshots, send/receive, checksums, a pool you already replicate to a NAS. Route 3 is less invasive and much easier to undo.</p>
 </div>
 
 <h2>What you need, whichever route you pick</h2>
@@ -112,39 +108,38 @@ Quattro, including the parts that go wrong.</p>
     <td>A backup you have actually restored from</td>
     <td>Every route below writes to disks. Route 2 destroys a working install by
         design.</td>
-    <td>—</td>
+    <td>-</td>
   </tr>
 </table>
 </div>
 
 <h2>Why ZFS here at all</h2>
 <p>Omarchy is opinionated, and that is most of why it is good. btrfs is one of
-those opinions — it is load-bearing for upstream's boot story, with snapper and
+those opinions. It is load-bearing for upstream's boot story, with snapper and
 <code>limine-snapper-sync</code> providing bootable snapshots. If that works for
 you, use it. This project exists for people whose storage already runs on ZFS,
 and who would rather not keep two mental models:</p>
 <ul>
-  <li><strong>Whole-pool native encryption</strong> — not dm-crypt/LUKS
+  <li><strong>Whole-pool native encryption</strong>. Not dm-crypt/LUKS
   underneath a filesystem. Encryption is a property of the dataset, so
   <code>zfs send</code> can move an encrypted dataset without ever decrypting
   it.</li>
-  <li><strong>Replication that understands your data</strong> —
-  <code>zfs send | receive</code> to a NAS, a second machine, or object storage,
+  <li><strong>Replication that understands your data</strong>. <code>zfs send | receive</code> to a NAS, a second machine, or object storage,
   incrementally, with the snapshot as the unit.</li>
   <li><strong>End-to-end checksums and scrubs</strong> on every block, with
   self-healing when a pool has redundancy.</li>
   <li><strong>One toolset</strong> if your TrueNAS box, your backup target, and
   your laptop all speak ZFS.</li>
 </ul>
-<p>The honest trade: ZFS is an out-of-tree module, so a kernel upgrade can
-outrun it. That is a real operational cost, and it is the single thing this
-package spends the most effort defending you against — see
+<p>The tradeoff: ZFS is an out-of-tree module, so a kernel upgrade can outrun
+it. That is a real operational cost, and it is what this package spends the most
+effort defending you against. See
 <a href="/docs/zfs-home#kernel">the kernel-skew section</a>.</p>
 
 <h2>What upstream says</h2>
 <p>On 28 July 2026, closing the ZFS support request on the Omarchy ISO repo,
 DHH wrote: <em>“Omarchy isn't going to support ZFS. That's a product call.”</em>
-The reasoning was sound — btrfs is wired into the installer and the snapshot
+The reasoning was sound: btrfs is wired into the installer and the snapshot
 boot flow, and a second filesystem means a second permanently-tested path. He
 also said he would be glad to see it <em>written up somewhere others can
 find it</em>.</p>
@@ -158,8 +153,7 @@ ever remove our package, you are left with plain Omarchy.</p>
   <p>omarchy-zfs is an independent project. Omarchy is by
   <a href="https://omarchy.org">Basecamp/DHH</a>; this project is not affiliated
   with or endorsed by them.</p>
-  <p>Corrections and additions welcome —
-  <a href="https://github.com/peteonrails/omarchy-zfs/issues">open an issue</a>.</p>
+  <p>Corrections and additions welcome. <a href="https://github.com/peteonrails/omarchy-zfs/issues">open an issue</a>.</p>
 </footer>
 </main>
 </div>
