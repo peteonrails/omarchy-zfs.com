@@ -71,8 +71,31 @@ tested on Omarchy Quattro.</p>
 
 <div class="note">
   <strong>Not sure?</strong>
-  <p>If you want bootable rollback of the whole operating system, you want a ZFS
-  root (routes 1 or 2). If you mainly want your <em>data</em> on ZFS. Snapshots, send/receive, checksums, a pool you already replicate to a NAS. Route 3 is less invasive and much easier to undo.</p>
+  <p>Both give you snapshots. What differs is what you can do while the machine
+  is broken.</p>
+  <p>Stock Omarchy already boots btrfs snapshots through limine and snapper, and
+  for plenty of people that is enough. A ZFS root with ZFSBootMenu differs in
+  ways that only show up on a bad day:</p>
+  <ul>
+    <li><strong>The kernel and initramfs live inside the boot environment.</strong>
+    Pick an older environment and you get the exact kernel and initramfs that
+    worked with it. Roll back a root filesystem while the ESP still holds the
+    newest kernel image and you can end up running an old userland under a new
+    kernel.</li>
+    <li><strong>You get a shell with the pool already imported, before anything
+    boots.</strong> From there you can list snapshots, roll one back, clone it,
+    chroot into it, or read your logs. A bootloader picks an entry and boots it.
+    It cannot do any of that.</li>
+    <li><strong>Boot environments are writable clones, not read-only
+    snapshots.</strong> You can boot one, work in it, and keep it. Making it your
+    permanent root is a property change rather than subvolume surgery.</li>
+    <li><strong>Nothing has to stay in sync.</strong> ZFSBootMenu finds the
+    environments in the pool when it starts. No service generates menu entries
+    that can drift from the snapshots you actually have.</li>
+  </ul>
+  <p>If what you want is your files on ZFS, meaning snapshots, send and receive,
+  checksums, and a pool you already replicate to a NAS, route 3 is less invasive
+  and easier to undo.</p>
 </div>
 
 <h2>What you need, whichever route you pick</h2>
@@ -115,7 +138,7 @@ tested on Omarchy Quattro.</p>
 
 <h2>Why ZFS here at all</h2>
 <p>Omarchy is opinionated, and that is most of why it is good. btrfs is one of
-those opinions. It is load-bearing for upstream's boot story, with snapper and
+those opinions. It is wired into upstream's boot story, with snapper and
 <code>limine-snapper-sync</code> providing bootable snapshots. If that works for
 you, use it. This project exists for people whose storage already runs on ZFS,
 and who would rather not keep two mental models:</p>
@@ -136,18 +159,15 @@ it. That is a real operational cost, and it is what this package spends the most
 effort defending you against. See
 <a href="/docs/zfs-home#kernel">the kernel-skew section</a>.</p>
 
-<h2>What upstream says</h2>
-<p>On 28 July 2026, closing the ZFS support request on the Omarchy ISO repo,
-DHH wrote: <em>“Omarchy isn't going to support ZFS. That's a product call.”</em>
-The reasoning was sound: btrfs is wired into the installer and the snapshot
-boot flow, and a second filesystem means a second permanently-tested path. He
-also said he would be glad to see it <em>written up somewhere others can
-find it</em>.</p>
-<p>So: this is not a fork, not a campaign, and not a request for anyone upstream
+<h2>Why a package and not a pull request</h2>
+<p>Omarchy does not support ZFS, and that is a product decision rather than an
+oversight. btrfs is wired into the installer and the snapshot boot flow, and a
+second filesystem would mean a second path to test on every release.</p>
+<p>So this is not a fork, not a campaign, and not a request for anyone upstream
 to carry our weight. <code>omarchy-zfs</code> is a package that
 <strong>depends on stock Omarchy</strong> and re-homes the ZFS pieces as real,
-package-owned files plus pacman hooks. You update Omarchy the normal way. If you
-ever remove our package, you are left with plain Omarchy.</p>
+package-owned files plus pacman hooks. You update Omarchy the normal way. Remove
+our package and you are left with plain Omarchy.</p>
 
 <footer>
   <p>omarchy-zfs is an independent project. Omarchy is by

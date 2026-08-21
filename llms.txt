@@ -87,7 +87,6 @@ Three supported routes, each tested end to end on Omarchy Quattro:
   module strategy on Arch, pool creation, moving /home without shadowing it, boot-time import,
   encryption key delivery, sanoid snapshots, scrubs, raw encrypted replication, kernel skew
 
-Context: Omarchy upstream formally declined ZFS support (2026-07-28, omarchy-iso#80, "Omarchy
-isn't going to support ZFS. That's a product call."), and asked for it to be written up where
-others can find it. These docs are that write-up. omarchy-zfs is a package that DEPENDS on stock
-Omarchy rather than forking it.
+Context: Omarchy does not support ZFS upstream. That is a product decision, not a gap waiting to
+be filled: btrfs is wired into the installer and the snapshot boot flow. omarchy-zfs is a package
+that DEPENDS on stock Omarchy rather than forking it, so nothing upstream has to change.

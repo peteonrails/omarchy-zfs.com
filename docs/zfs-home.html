@@ -77,8 +77,10 @@ NAS. No reinstall, and it is straightforward to undo.</p>
   <tr><td>Exposure to kernel/ZFS skew</td><td>Yes. <code>/home</code> is missing if the module fails to build</td><td>Yes. The machine will not boot</td></tr>
 </table>
 </div>
-<p>If you only want your data on ZFS, stop here and do this. If you want
-bootable rollback of the whole operating system, you want a ZFS root.</p>
+<p>If you only want your data on ZFS, stop here and do this. Go for a ZFS root
+if you want the boot-time recovery: an older kernel and initramfs paired with the
+older userland, and a shell with the pool imported before anything starts. See
+<a href="/docs/">the comparison</a>.</p>
 
 <h2 id="module">1. Install the ZFS module</h2>
 <p>ZFS is out-of-tree, so on Arch you pick a strategy. This is the part people
