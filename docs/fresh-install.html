@@ -270,6 +270,13 @@ fix a password (<code>passwd &lt;user&gt;</code>), or read
 
 <h2>Next</h2>
 <ul>
+  <li><strong>Hibernation is experimental.</strong>
+  <code>sudo omarchy-zfs-hibernation-setup</code> creates an encrypted zvol swap
+  and wires up <code>resume</code>, which the target initramfs performs after
+  ZFSBootMenu hands off. Suspend-to-disk itself is not in the test matrix, and
+  OpenZFS discourages swap on a zvol because it can deadlock under memory
+  pressure. A plain swap partition outside the pool is the conservative
+  fallback.</li>
   <li><a href="/docs/zfs-home#snapshots">Snapshots, scrubs and replication</a>. Applies to a ZFS root too.</li>
   <li><a href="/docs/zfs-home#kernel">Kernel upgrades and zfs-dkms</a>. The one
   operational cost of ZFS you should understand before you depend on it.</li>

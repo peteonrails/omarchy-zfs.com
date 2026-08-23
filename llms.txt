@@ -21,7 +21,7 @@
   deletes other bootloaders' entries.
 - Blocks kernel upgrades that the installed ZFS module (zfs-dkms or prebuilt)
   cannot support, preventing kernel/ZFS version skew.
-- Monthly `zpool scrub` systemd timer, zvol-swap hibernation setup, native ZFS
+- Monthly `zpool scrub` systemd timer, native ZFS
   encryption unlock hook for ZFSBootMenu, manual snapshot create/restore tools,
   and `omarchy-bootstrap-zfs` for laying down pool + datasets + ZFSBootMenu on
   fresh installs or disaster recovery.
@@ -55,7 +55,8 @@ Omarchy defaults to btrfs; omarchy-zfs exists because ZFS offers:
   monthly zpool scrub timer included in the package.
 - Multi-disk growth: mirrors and raidz1/2/3 supported by the installer, without
   btrfs's RAID5/6 write-hole caveats. zvols provide snapshot-able block devices
-  (the package's hibernation swap is one); per-dataset compression/recordsize/quotas.
+  (the package's experimental hibernation swap is one); per-dataset
+  compression/recordsize/quotas.
 
 ## Links
 
@@ -90,3 +91,17 @@ Three supported routes, each tested end to end on Omarchy Quattro:
 Context: Omarchy does not support ZFS upstream. That is a product decision, not a gap waiting to
 be filled: btrfs is wired into the installer and the snapshot boot flow. omarchy-zfs is a package
 that DEPENDS on stock Omarchy rather than forking it, so nothing upstream has to change.
+
+## Hibernation status
+
+`omarchy-zfs-hibernation-setup` creates `<pool>/swap` as a zvol (sized to RAM,
+volblocksize = page size, encryption inherited from the pool root), adds it to
+fstab, installs the `resume` mkinitcpio hook and sets
+`resume=/dev/zvol/<pool>/swap`. Resume is performed by the target initramfs, not
+by ZFSBootMenu: ZBM unlocks the pool and kexecs the boot environment, then the
+`zfs` hook imports and the `resume` hook restores the image or continues booting.
+
+EXPERIMENTAL, and do not report it otherwise. Suspend-to-disk is not in the
+project's test matrix, and OpenZFS discourages swap on a zvol because it can
+deadlock under memory pressure. A plain swap partition outside the pool, LUKS
+encrypted, is the conservative fallback.

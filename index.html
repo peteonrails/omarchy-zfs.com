@@ -32,7 +32,7 @@
       "operatingSystem": "Arch Linux (Omarchy)",
       "softwareRequirements": "Omarchy Quattro (4.x) or later",
       "applicationCategory": "UtilitiesApplication",
-      "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux: pre-upgrade ZFS snapshots, self-healing pacman hooks, monthly scrubs, zvol-swap hibernation, and an installer ISO.",
+      "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux: pre-upgrade ZFS snapshots, self-healing pacman hooks, monthly scrubs, and an installer ISO.",
       "url": "https://omarchy-zfs.com/",
       "downloadUrl": "https://aur.archlinux.org/packages/omarchy-zfs",
       "softwareVersion": "1.0.1",
@@ -336,7 +336,7 @@ footer p{margin-bottom:.4rem}
     <tr><td>EFI boot-order guard</td><td>Keeps ZFSBootMenu first; never deletes other entries</td></tr>
     <tr><td>Snapper cleanup</td><td>Removes btrfs-only snapper configs that abort <code>omarchy update</code> on ZFS</td></tr>
     <tr><td>Pool health</td><td>Monthly <code>zpool scrub</code> timer</td></tr>
-    <tr><td>Hibernation</td><td>Suspend-to-disk on a zvol swap</td></tr>
+    <tr><td>Hibernation <span class="dim">(experimental)</span></td><td>Creates an encrypted zvol swap and wires up <code>resume</code>. Setting it up is one command; suspend-to-disk itself is not in the test matrix, and OpenZFS discourages swap on a zvol. Treat it as an experiment, not a feature</td></tr>
     <tr><td>Fresh installs &amp; recovery</td><td><code>omarchy-bootstrap-zfs</code>: pool, datasets, encryption, ZBM. From the ISO or any live environment</td></tr>
   </table>
   </div>
