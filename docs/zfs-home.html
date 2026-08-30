@@ -117,15 +117,26 @@ zfs version</code></pre>
   <strong>A DKMS failure is only a pacman <em>warning</em></strong>
   <p>If the module does not build, <code>pacman</code> prints a warning and
   carries on. Nothing stops you rebooting into a kernel with no
-  <code>zfs.ko</code>. Always confirm the module actually exists for the kernel
-  you are about to boot:</p>
-  <pre><code>ls /usr/lib/modules/$(uname -r)/updates/dkms/zfs.ko*</code></pre>
+  <code>zfs.ko</code>. The usual cause is missing kernel headers:
+  <strong>neither <code>zfs-dkms</code> nor <code>zfs-dkms-git</code> declares
+  them</strong>, because neither can know which kernel you boot. Install the set
+  matching your kernel (<code>linux-headers</code>,
+  <code>linux-lts-headers</code>, and so on).</p>
+  <p>Then confirm the module actually exists before you reboot:</p>
+  <pre><code>omarchy-zfs-module-check      # checks every installed kernel
+modinfo -k $(uname -r) zfs    # or ask modprobe directly</code></pre>
+  <p><code>omarchy-zfs-module-check</code> also runs from a pacman hook after any
+  kernel or DKMS transaction, so a silent build failure gets reported at the
+  moment it happens rather than at the next reboot.</p>
 </div>
 
 <h2 id="package">2. Install omarchy-zfs, and know what it does here</h2>
 <pre><code>yay -S omarchy-zfs</code></pre>
-<p>The package is built for root-on-ZFS and stays inert on a btrfs root. Every
-guard checks the root filesystem and exits when it is not ZFS:</p>
+<p>The boot-safety guards are built for root-on-ZFS and stay inert on a btrfs
+root: each checks the root filesystem and exits when it is not ZFS. Two tools
+do work here regardless, and are the reason to install it on this layout:
+<code>omarchy-zfs-boot-mounts-setup</code> and
+<code>omarchy-zfs-module-check</code>.</p>
 <div class="tablewrap">
 <table>
   <tr><th>Component</th><th>On a btrfs root with a ZFS data pool</th></tr>
@@ -133,6 +144,8 @@ guard checks the root filesystem and exits when it is not ZFS:</p>
   <tr><td><code>omarchy-zfs-snapper-guard</code></td><td><strong>No-op.</strong> Your working snapper configs are untouched. It only removes configs pointing at something that is not btrfs, and only on a ZFS root.</td></tr>
   <tr><td><code>omarchy-zfs-bootorder-guard</code></td><td><strong>No-op.</strong> It never touches your EFI boot order; limine stays first.</td></tr>
   <tr><td><code>omarchy-zfs-autosnap</code></td><td><strong>No-op.</strong> Pre-upgrade snapshots are <em>not</em> automatic in this layout. See <a href="#snapshots">snapshots</a>.</td></tr>
+  <tr><td><code>omarchy-zfs-boot-mounts-setup</code></td><td><strong>Active.</strong> Opts pools into <code>zfs-mount-generator</code> so datasets mount and keys load at boot.</td></tr>
+  <tr><td><code>omarchy-zfs-module-check</code></td><td><strong>Active.</strong> Warns when an installed kernel has no <code>zfs.ko</code>, naming the headers package to install.</td></tr>
   <tr><td><code>omarchy-zfs-scrub.timer</code></td><td><strong>Active.</strong> Monthly scrub of <em>every</em> imported pool.</td></tr>
   <tr><td><code>omarchy-zfs-kernel-compat-check</code></td><td><strong>Active</strong> (1.1.3+). Blocks a kernel upgrade that <code>zfs-dkms</code> cannot build against, whenever ZFS is in use. Not only on ZFS roots. See <a href="#kernel">below</a>.</td></tr>
   <tr><td><code>omarchy-bootstrap-zfs</code>, <code>omarchy-refresh-zbm</code>, ZFSBootMenu configs</td><td>Installed but unused. They are for ZFS roots.</td></tr>
@@ -224,11 +237,33 @@ sudo rm -rf /home.old</code></pre>
 <p>Installing the packages does not necessarily enable the services, and a pool
 that imports but never mounts is worse than one that fails loudly. Check, then
 enable:</p>
+<pre><code>sudo omarchy-zfs-boot-mounts-setup</code></pre>
+<p>That opts each pool into <code>zfs-mount-generator</code>, which ships with
+<code>zfs-utils</code> and is the piece that does the real work. At boot it reads
+<code>/etc/zfs/zfs-list.cache/&lt;pool&gt;</code> and generates a
+<code>.mount</code> unit per dataset, plus the
+<code>zfs-load-key@&lt;dataset&gt;.service</code> units needed to unlock encrypted
+ones, ordered so the key loads first.</p>
+<div class="warn">
+  <strong>This is opt-in, and nothing opts you in</strong>
+  <p>The generator only acts on pools that have a file in
+  <code>/etc/zfs/zfs-list.cache/</code>. On a fresh system that directory does not
+  exist, so an encrypted pool imports at boot and then just sits there:
+  <code>keystatus unavailable</code>, nothing mounted, no error anywhere. That is
+  the whole failure, and it is what the command above fixes. It verifies the
+  units were generated rather than assuming, and tells you if they were not.</p>
+</div>
+<p>The underlying services still need to be enabled, which the tool checks:</p>
 <pre><code>systemctl is-enabled zfs-import-cache zfs-mount zfs-zed zfs-import.target zfs.target
 
 sudo systemctl enable zfs-import-cache.service zfs-mount.service \
   zfs-zed.service zfs-import.target zfs.target
 sudo zpool set cachefile=/etc/zfs/zpool.cache tank</code></pre>
+<p class="dim">Doing it by hand instead? A
+<code>zfs-load-key@.service</code> template works, but you write the instance
+name yourself and systemd reads <code>-</code> as <code>/</code>, so a dataset
+with a hyphen in its name silently unlocks the wrong thing. The generator escapes
+properly: <code>zfs-load-key@tank-enc-my\x2ddata.service</code>.</p>
 <div class="warn">
   <strong>Do not put ZFS datasets in <code>/etc/fstab</code></strong>
   <p>ZFS mounts them from its own properties. An fstab entry for the same path
