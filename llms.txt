@@ -28,18 +28,20 @@
 
 ## Install
 
-- Existing Omarchy system on a ZFS root: `yay -S omarchy-zfs` (AUR:
-  https://aur.archlinux.org/packages/omarchy-zfs). Dependencies resolve via the
-  virtual `zfs`/`zfs-utils` provides, so zfs-dkms, zfs-dkms-git, zfs-linux, or
-  zfs-linux-lts all work. ZFSBootMenu itself is an optdepend (AUR package or
-  prebuilt EFI images from zfsbootmenu.org).
+- Existing Omarchy system on a ZFS root: add the project's signed pacman repo
+  and install. Key: https://omarchy-zfs.com/repo/omarchy-zfs.gpg (fingerprint
+  A38BB6838242C1A193FF7D481360E72C018F296D), repo stanza `[omarchy-zfs]` with
+  `Server = https://omarchy-zfs.com/repo/any`, then `pacman -Sy omarchy-zfs`.
+  Dependencies resolve via the virtual `zfs`/`zfs-utils` provides, so zfs-dkms,
+  zfs-dkms-git, zfs-linux, or zfs-linux-lts all work. `sanoid` is AUR-only; with
+  the repo added, `yay -S omarchy-zfs` pulls both. ZFSBootMenu itself is an
+  optdepend (AUR package or prebuilt EFI images from zfsbootmenu.org).
+- Not on the AUR: the AUR deleted omarchy-zfs in October 2026 because it requires
+  Omarchy at runtime and so does not work on vanilla Arch.
 - Fresh machine: the omarchy-zfs ISO (beta). The official Omarchy installer plus a
   root-on-ZFS path, fully offline. Download:
   https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso
   or build it yourself from iso/ in the source repo (one command, needs docker).
-- Caution: the AUR package named `omarchy` is an unrelated third-party placeholder.
-  The real omarchy dependency is the official package from pkgs.omarchy.org, already
-  present on every Omarchy system.
 
 ## Why ZFS instead of btrfs
 
@@ -61,7 +63,7 @@ Omarchy defaults to btrfs; omarchy-zfs exists because ZFS offers:
 ## Links
 
 - Source: https://github.com/peteonrails/omarchy-zfs
-- AUR: https://aur.archlinux.org/packages/omarchy-zfs
+- Package repo: https://omarchy-zfs.com/repo/any (key: https://omarchy-zfs.com/repo/omarchy-zfs.gpg)
 - ZFSBootMenu: https://zfsbootmenu.org/
 - Omarchy: https://omarchy.org
 

@@ -11,7 +11,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://omarchy-zfs.com/">
 <meta property="og:title" content="omarchy-zfs. Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
-<meta property="og:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. AUR package + installer ISO.">
+<meta property="og:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. Signed pacman repo + installer ISO.">
 <meta property="og:site_name" content="omarchy-zfs">
 <meta property="og:image" content="https://omarchy-zfs.com/assets/fastfetch-zfs.png">
 <meta property="og:image:width" content="1694">
@@ -20,7 +20,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://omarchy-zfs.com/assets/fastfetch-zfs.png">
 <meta name="twitter:title" content="omarchy-zfs. Root-on-ZFS + ZFSBootMenu for Omarchy Linux">
-<meta name="twitter:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. AUR package + installer ISO.">
+<meta name="twitter:description" content="Run Omarchy on a ZFS root. Boot-safe updates, pre-upgrade snapshots, ZFSBootMenu rollback. Signed pacman repo + installer ISO.">
 
 <script type="application/ld+json">
 {
@@ -34,14 +34,13 @@
       "applicationCategory": "UtilitiesApplication",
       "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux: pre-upgrade ZFS snapshots, self-healing pacman hooks, monthly scrubs, and an installer ISO.",
       "url": "https://omarchy-zfs.com/",
-      "downloadUrl": "https://aur.archlinux.org/packages/omarchy-zfs",
-      "softwareVersion": "1.0.1",
+      "downloadUrl": "https://omarchy-zfs.com/repo/any",
+      "softwareVersion": "1.1.5",
       "license": "https://opensource.org/license/mit",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
       "author": { "@type": "Person", "name": "Pete Jackson", "url": "https://github.com/peteonrails" },
       "sameAs": [
-        "https://github.com/peteonrails/omarchy-zfs",
-        "https://aur.archlinux.org/packages/omarchy-zfs"
+        "https://github.com/peteonrails/omarchy-zfs"
       ]
     },
     {
@@ -70,7 +69,7 @@
         {
           "@type": "Question",
           "name": "How do I install omarchy-zfs?",
-          "acceptedAnswer": { "@type": "Answer", "text": "On an existing Omarchy system whose root is already ZFS: yay -S omarchy-zfs. For a fresh machine, boot the omarchy-zfs ISO and choose the ZFS install path." }
+          "acceptedAnswer": { "@type": "Answer", "text": "On an existing Omarchy system whose root is already ZFS: add the signed omarchy-zfs pacman repo from omarchy-zfs.com and pacman -Sy omarchy-zfs. For a fresh machine, boot the omarchy-zfs ISO and choose the ZFS install path." }
         },
         {
           "@type": "Question",
@@ -187,10 +186,14 @@ footer p{margin-bottom:.4rem}
       <path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/><path d="M8 5.25l8 4.5"/>
     </svg>
     <h2>Already on Omarchy with a ZFS root</h2>
-    <pre><code>yay -S omarchy-zfs</code></pre>
+    <pre><code>curl -fsSL https://omarchy-zfs.com/repo/omarchy-zfs.gpg | sudo pacman-key --add -
+sudo pacman-key --lsign-key A38BB6838242C1A193FF7D481360E72C018F296D
+printf '\n[omarchy-zfs]\nServer = https://omarchy-zfs.com/repo/any\n' | sudo tee -a /etc/pacman.conf
+sudo pacman -Sy omarchy-zfs</code></pre>
     <p>For manual root-on-ZFS installs: one package, and the pacman hooks take over from there.
-    Requires Omarchy Quattro (4.x) or later.
-    <a href="https://aur.archlinux.org/packages/omarchy-zfs">AUR page</a>.</p>
+    Requires Omarchy Quattro (4.x) or later. <code>sanoid</code> is AUR-only, so run
+    <code>yay -S omarchy-zfs</code> after adding the repo if you do not have it.
+    <a href="https://github.com/peteonrails/omarchy-zfs#install">Install notes</a>.</p>
   </div>
 </div>
 
@@ -398,17 +401,18 @@ footer p{margin-bottom:.4rem}
     <code>omarchy-zfs-snapshot restore</code>.</p></div>
   </details>
   <details>
-    <summary>Heads up: the AUR "omarchy" package</summary>
-    <div><p>The AUR package named <code>omarchy</code> is an unrelated third-party placeholder.
-    The real dependency is the official package from <code>pkgs.omarchy.org</code>, already on
-    every Omarchy system. Don't build the placeholder.</p></div>
+    <summary>Why isn't this on the AUR any more?</summary>
+    <div><p>The AUR removed it in October 2026 because it requires Omarchy at runtime, and
+    Omarchy itself ships only from a third-party repo, so the package does not work on
+    vanilla Arch. The rule is fair. It now ships from this site's signed pacman repo, which
+    is the honest home for a package that already assumes one third-party repo.</p></div>
   </details>
 </section>
 </main>
 
 <footer>
   <p><a href="https://github.com/peteonrails/omarchy-zfs">GitHub</a> ·
-     <a href="https://aur.archlinux.org/packages/omarchy-zfs">AUR</a> ·
+     <a href="https://omarchy-zfs.com/repo/any">Package repo</a> ·
      <a href="https://zfsbootmenu.org/">ZFSBootMenu</a> ·
      <a href="https://omarchy.org">Omarchy</a></p>
   <p>MIT licensed. Independent community project. Not affiliated with Omarchy, 37signals, or OpenZFS.</p>

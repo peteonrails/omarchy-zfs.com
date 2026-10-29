@@ -131,7 +131,10 @@ modinfo -k $(uname -r) zfs    # or ask modprobe directly</code></pre>
 </div>
 
 <h2 id="package">2. Install omarchy-zfs, and know what it does here</h2>
-<pre><code>yay -S omarchy-zfs</code></pre>
+<pre><code>curl -fsSL https://omarchy-zfs.com/repo/omarchy-zfs.gpg | sudo pacman-key --add -
+sudo pacman-key --lsign-key A38BB6838242C1A193FF7D481360E72C018F296D
+printf '\n[omarchy-zfs]\nServer = https://omarchy-zfs.com/repo/any\n' | sudo tee -a /etc/pacman.conf
+sudo pacman -Sy omarchy-zfs</code></pre>
 <p>The boot-safety guards are built for root-on-ZFS and stay inert on a btrfs
 root: each checks the root filesystem and exits when it is not ZFS. Two tools
 do work here regardless, and are the reason to install it on this layout:
