@@ -33,9 +33,10 @@
   A38BB6838242C1A193FF7D481360E72C018F296D), repo stanza `[omarchy-zfs]` with
   `Server = https://omarchy-zfs.com/repo/any`, then `pacman -Sy omarchy-zfs`.
   Dependencies resolve via the virtual `zfs`/`zfs-utils` provides, so zfs-dkms,
-  zfs-dkms-git, zfs-linux, or zfs-linux-lts all work. `sanoid` is AUR-only; with
-  the repo added, `yay -S omarchy-zfs` pulls both. ZFSBootMenu itself is an
-  optdepend (AUR package or prebuilt EFI images from zfsbootmenu.org).
+  zfs-dkms-git, zfs-linux, or zfs-linux-lts all work. The repo also mirrors the
+  AUR-only `sanoid` and `perl-config-inifiles`, so no AUR helper is needed.
+  ZFSBootMenu itself is an optdepend (AUR package or prebuilt EFI images from
+  zfsbootmenu.org).
 - Not on the AUR: the AUR deleted omarchy-zfs in October 2026 because it requires
   Omarchy at runtime and so does not work on vanilla Arch.
 - Fresh machine: the omarchy-zfs ISO (beta). The official Omarchy installer plus a

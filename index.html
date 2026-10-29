@@ -191,8 +191,8 @@ sudo pacman-key --lsign-key A38BB6838242C1A193FF7D481360E72C018F296D
 printf '\n[omarchy-zfs]\nServer = https://omarchy-zfs.com/repo/any\n' | sudo tee -a /etc/pacman.conf
 sudo pacman -Sy omarchy-zfs</code></pre>
     <p>For manual root-on-ZFS installs: one package, and the pacman hooks take over from there.
-    Requires Omarchy Quattro (4.x) or later. <code>sanoid</code> is AUR-only, so run
-    <code>yay -S omarchy-zfs</code> after adding the repo if you do not have it.
+    Requires Omarchy Quattro (4.x) or later. The repo also carries <code>sanoid</code>, so
+    no AUR helper is needed.
     <a href="https://github.com/peteonrails/omarchy-zfs#install">Install notes</a>.</p>
   </div>
 </div>
