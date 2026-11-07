@@ -66,7 +66,7 @@ passphrase prompt and boot environments you can roll back to.</p>
 
 <div class="warn">
   <strong>Status: beta</strong>
-  <p>The 2026.08.20.1 image was taken through this exact sequence before
+  <p>The 2026.11.07 image, built on Omarchy 4.5.1, was taken through this exact sequence before
   publishing. Fresh disk, fresh UEFI variables, no manual repair. Ending at a
   logged-in desktop. That is the bar for a release, rather than "it worked once
   on the author's machine". It is still young software that repartitions disks.
@@ -74,10 +74,10 @@ passphrase prompt and boot environments you can roll back to.</p>
 </div>
 
 <h2 id="download">1. Download and verify the ISO</h2>
-<pre><code>curl -LO https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso
-curl -LO https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso.sha256
-sha256sum -c omarchy-zfs-2026.08.20.1-x86_64-quattro.iso.sha256</code></pre>
-<p>You want <code>OK</code>. About 6.2 GB. It carries a full offline package
+<pre><code>curl -LO https://dl.omarchy-zfs.com/omarchy-zfs-2026.11.07-x86_64-quattro.iso
+curl -LO https://dl.omarchy-zfs.com/omarchy-zfs-2026.11.07-x86_64-quattro.iso.sha256
+sha256sum -c omarchy-zfs-2026.11.07-x86_64-quattro.iso.sha256</code></pre>
+<p>You want <code>OK</code>. About 6.8 GB. It carries a full offline package
 mirror so the install never touches the network.</p>
 <p class="dim">Prefer to build it yourself? <code>iso/build.sh</code> in the repo
 clones the official Omarchy ISO at a pinned commit and applies a small overlay. No fork. It needs Docker and about 15 GB.</p>
@@ -86,7 +86,7 @@ clones the official Omarchy ISO at a pinned commit and applies a small overlay. 
 <pre><code># Find the stick. Get this wrong and you erase the wrong disk.
 lsblk -o NAME,SIZE,MODEL,TRAN
 
-sudo dd if=omarchy-zfs-2026.08.20.1-x86_64-quattro.iso of=/dev/sdX bs=4M \
+sudo dd if=omarchy-zfs-2026.11.07-x86_64-quattro.iso of=/dev/sdX bs=4M \
      status=progress oflag=sync</code></pre>
 <div class="danger">
   <strong>Check the device name twice</strong>
@@ -133,11 +133,11 @@ off</strong>. The live environment comes up and asks:</p>
   <tr><td>Username [user]</td><td>Your daily login, not root.</td></tr>
 </table>
 </div>
-<p>Then it runs unattended for roughly 10–15 minutes and finishes with
+<p>Then it runs unattended for roughly 5–10 minutes and finishes with
 <code>Bootstrap complete.</code> Along the way it prints two verifications worth
 noticing:</p>
-<pre><code>omarchy-zfs-embed-pool-key: verified etc/zfs/zroot.key present in /boot/initramfs-linux.img
-✓ Verified: pool key embedded in the in-pool initramfs (single passphrase prompt)
+<pre><code>omarchy-zfs-boot-images: staged /boot/vmlinuz-linux-omarchy and /boot/initramfs-linux-omarchy.img (key verified)
+✓ Verified: pool key embedded in every in-pool initramfs (single passphrase prompt)
 ✓ Boot-readiness verified: kernel+initramfs pairs, ZBM image, hostid</code></pre>
 <p>If instead you see <em>“pool key is NOT embedded”</em>, the install is still
 fine. You will simply be asked for the passphrase twice at boot. If a

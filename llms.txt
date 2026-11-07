@@ -44,7 +44,7 @@
   in its own transaction before omarchy update.
 - Fresh machine: the omarchy-zfs ISO (beta). The official Omarchy installer plus a
   root-on-ZFS path, fully offline. Download:
-  https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso
+  https://dl.omarchy-zfs.com/omarchy-zfs-2026.11.07-x86_64-quattro.iso
   or build it yourself from iso/ in the source repo (one command, needs docker).
 
 ## Why ZFS instead of btrfs
