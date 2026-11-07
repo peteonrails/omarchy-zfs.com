@@ -19,8 +19,12 @@
 - Keeps ZFSBootMenu first in the EFI BootOrder (Limine, a hard Omarchy dependency,
   can silently front-load itself. A dead boot on ZFS). It only reorders, never
   deletes other bootloaders' entries.
-- Blocks kernel upgrades that the installed ZFS module (zfs-dkms or prebuilt)
-  cannot support, preventing kernel/ZFS version skew.
+- Blocks any kernel install or upgrade the installed ZFS module (zfs-dkms or
+  prebuilt) cannot support, Omarchy's own kernels included.
+- Stages every kernel that has a ZFS module into /boot with its initramfs, so
+  ZFSBootMenu can boot it (linux-omarchy on Omarchy 4.5).
+- Puts the [omarchy-zfs] repo back in /etc/pacman.conf when a channel switch or
+  Omarchy's installer rewrites it (1.2.3+).
 - Monthly `zpool scrub` systemd timer, native ZFS
   encryption unlock hook for ZFSBootMenu, manual snapshot create/restore tools,
   and `omarchy-bootstrap-zfs` for laying down pool + datasets + ZFSBootMenu on

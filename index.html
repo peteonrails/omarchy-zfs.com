@@ -35,7 +35,7 @@
       "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux: pre-upgrade ZFS snapshots, self-healing pacman hooks, monthly scrubs, and an installer ISO.",
       "url": "https://omarchy-zfs.com/",
       "downloadUrl": "https://omarchy-zfs.com/repo/any",
-      "softwareVersion": "1.2.1",
+      "softwareVersion": "1.2.3",
       "license": "https://opensource.org/license/mit",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
       "author": { "@type": "Person", "name": "Pete Jackson", "url": "https://github.com/peteonrails" },
@@ -338,6 +338,7 @@ sudo pacman -Sy omarchy-zfs</code></pre>
     <tr><td>Kernel-skew protection</td><td>Blocks any kernel install or upgrade the installed ZFS module can't build against. Omarchy's own kernels included</td></tr>
     <tr><td>Every kernel in ZFSBootMenu</td><td>Copies each kernel that has a ZFS module into <code>/boot</code> with its initramfs, so ZFSBootMenu can boot it. A kernel without one is left out</td></tr>
     <tr><td>EFI boot-order guard</td><td>Keeps ZFSBootMenu first; never deletes other entries</td></tr>
+    <tr><td>Repo self-heal</td><td>Puts <code>[omarchy-zfs]</code> back in <code>/etc/pacman.conf</code> when a channel switch or Omarchy's installer rewrites it, so updates keep arriving</td></tr>
     <tr><td>Snapper cleanup</td><td>Removes btrfs-only snapper configs that abort <code>omarchy update</code> on ZFS</td></tr>
     <tr><td>Pool health</td><td>Monthly <code>zpool scrub</code> timer</td></tr>
     <tr><td>Hibernation <span class="dim">(experimental)</span></td><td>Creates an encrypted zvol swap and wires up <code>resume</code>. Setting it up is one command; suspend-to-disk itself is not in the test matrix, and OpenZFS discourages swap on a zvol. Treat it as an experiment, not a feature</td></tr>

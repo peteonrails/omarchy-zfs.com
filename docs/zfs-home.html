@@ -89,27 +89,30 @@ get wrong.</p>
 <table>
   <tr><th>Option</th><th>What it is</th><th>Use when</th></tr>
   <tr>
-    <td><code>zfs-dkms</code> + <code>zfs-utils</code><br><span class="dim">archzfs repo or AUR</span></td>
+    <td><code>zfs-dkms</code> + <code>zfs-utils</code><br><span class="dim">AUR</span></td>
     <td>Rebuilds the module for each kernel you install.</td>
-    <td>The released OpenZFS supports your kernel.</td>
+    <td>The released OpenZFS supports your kernel. 2.4.4 covers up to 7.2,
+        which includes Omarchy 4.5's <code>linux-omarchy</code>. This is what our
+        ISO and the author's workstation run.</td>
   </tr>
   <tr>
     <td><code>zfs-dkms-git</code> + <code>zfs-utils-git</code><br><span class="dim">AUR</span></td>
     <td>Same, from OpenZFS master.</td>
-    <td>Arch's kernel is newer than the last OpenZFS release. Often the case.
-        This is what our ISO and the author's workstation run.</td>
+    <td>Arch's kernel is newer than the last OpenZFS release. Often the case
+        for a few weeks after each kernel series lands.</td>
   </tr>
   <tr>
     <td><code>zfs-linux</code> / <code>zfs-linux-lts</code><br><span class="dim">archzfs</span></td>
     <td>Prebuilt module pinned to one exact kernel build.</td>
     <td>You run <code>linux-lts</code> and want no compiler in the loop. Be aware
-        the pin means kernel and module must move together, and archzfs can lag
-        badly.</td>
+        the pin means kernel and module must move together, and archzfs has not
+        kept up: in November 2026 it still ships zfs 2.3.3.</td>
   </tr>
 </table>
 </div>
-<pre><code># The combination most likely to build on a current Arch kernel:
-yay -S zfs-dkms-git zfs-utils-git
+<pre><code># Released OpenZFS from the AUR. Keep the aur/ prefix: with [archzfs]
+# configured, pacman and yay both prefer its older copy.
+yay -S aur/zfs-dkms aur/zfs-utils
 
 sudo modprobe zfs
 zfs version</code></pre>
@@ -151,6 +154,7 @@ do work here regardless, and are the reason to install it on this layout:
   <tr><td><code>omarchy-zfs-module-check</code></td><td><strong>Active.</strong> Warns when an installed kernel has no <code>zfs.ko</code>, naming the headers package to install.</td></tr>
   <tr><td><code>omarchy-zfs-scrub.timer</code></td><td><strong>Active.</strong> Monthly scrub of <em>every</em> imported pool.</td></tr>
   <tr><td><code>omarchy-zfs-kernel-compat-check</code></td><td><strong>Active</strong> (1.1.3+). Blocks a kernel upgrade that <code>zfs-dkms</code> cannot build against, whenever ZFS is in use. Not only on ZFS roots. See <a href="#kernel">below</a>.</td></tr>
+  <tr><td><code>omarchy-zfs-pacman-repo</code></td><td><strong>Active</strong> (1.2.3+). Puts <code>[omarchy-zfs]</code> back in <code>/etc/pacman.conf</code> when Omarchy rewrites it on a channel switch.</td></tr>
   <tr><td><code>omarchy-bootstrap-zfs</code>, <code>omarchy-refresh-zbm</code>, ZFSBootMenu configs</td><td>Installed but unused. They are for ZFS roots.</td></tr>
 </table>
 </div>

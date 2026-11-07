@@ -246,8 +246,7 @@ was a real bug in the 2026.08.20 image, fixed in 2026.08.20.1.</p>
 
 <h3>Asked for the passphrase twice</h3>
 <p>The pool key is not in the initramfs. Harmless but annoying:</p>
-<pre><code>sudo omarchy-zfs-embed-pool-key   # rebuild the in-pool initramfs with the key
-sudo omarchy-refresh-zbm          # or do both plus ZBM in one step</code></pre>
+<pre><code>sudo omarchy-refresh-zbm   # rebuild the in-pool images with the key, then ZBM</code></pre>
 
 <h3>“pool was previously in use from another system”</h3>
 <p>Usually <em>not</em> a problem: ZFSBootMenu leaves the pool imported when it
