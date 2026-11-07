@@ -371,18 +371,24 @@ specific and confusing: the pool does not import, <code>/home</code> is missing,
 and the greeter accepts your password and then throws you straight back to the
 login screen. It looks exactly like a wrong password. It is not.</p>
 <p>From 1.1.3, <code>omarchy-zfs</code>'s pre-transaction guard fires whenever
-ZFS is in use. A ZFS root, any imported pool, or simply having a DKMS zfs
+ZFS is in use. From 1.2.0 it covers every kernel package, Omarchy's own
+included. A ZFS root, any imported pool, or simply having a DKMS zfs
 package installed. When it blocks an upgrade you get a banner naming the
 candidate kernel and the maximum <code>zfs-dkms</code> supports, and pacman
 aborts <em>before</em> touching a single package:</p>
 <pre><code>ABORT: ZFS kernel compatibility check failed
-  candidate kernel: 7.2.1.arch1-1
-  zfs-dkms Linux-Maximum: 7.1
+  candidate kernel: kernel 7.2.15-2-omarchy (needs zfs Linux-Maximum >= 7.2)
+  zfs-dkms Linux-Maximum: 7.0
 
   Building zfs against this kernel will fail.
   Proceeding would leave the system unbootable on next restart.</code></pre>
 <p>Your options, in order of preference:</p>
 <ol>
+  <li><strong>Update ZFS</strong>, if a release covers the kernel. On Omarchy 4.5
+  this is the usual case: <code>omarchy update</code> brings <code>linux-omarchy</code>
+  7.2, and OpenZFS 2.4.4 builds for it. Do it in its own transaction, and keep
+  the <code>aur/</code> prefix so <code>[archzfs]</code>'s older copy doesn't win:
+  <code>yay -S aur/zfs-dkms aur/zfs-utils</code>.</li>
   <li><strong>Wait.</strong> Upgrade everything else:
   <code>sudo pacman -Syu --ignore linux,linux-headers</code>.</li>
   <li><strong>Move to <code>zfs-dkms-git</code></strong>, which usually supports

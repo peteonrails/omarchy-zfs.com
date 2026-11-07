@@ -35,7 +35,7 @@
       "description": "Root-on-ZFS + ZFSBootMenu support layer for Omarchy Linux: pre-upgrade ZFS snapshots, self-healing pacman hooks, monthly scrubs, and an installer ISO.",
       "url": "https://omarchy-zfs.com/",
       "downloadUrl": "https://omarchy-zfs.com/repo/any",
-      "softwareVersion": "1.1.5",
+      "softwareVersion": "1.2.1",
       "license": "https://opensource.org/license/mit",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
       "author": { "@type": "Person", "name": "Pete Jackson", "url": "https://github.com/peteonrails" },
@@ -335,7 +335,8 @@ sudo pacman -Sy omarchy-zfs</code></pre>
     <tr><th>Capability</th><th>How</th></tr>
     <tr><td>Snapshot before every update</td><td>PreTransaction hook with retention (<code>omarchy-zfs-autosnap</code>)</td></tr>
     <tr><td>Boot-safe updates</td><td>PostTransaction hook re-asserts the <code>zfs</code> initramfs hook, regenerates initramfs + ZBM</td></tr>
-    <tr><td>Kernel-skew protection</td><td>Blocks kernel upgrades the installed ZFS module can't build against</td></tr>
+    <tr><td>Kernel-skew protection</td><td>Blocks any kernel install or upgrade the installed ZFS module can't build against. Omarchy's own kernels included</td></tr>
+    <tr><td>Every kernel in ZFSBootMenu</td><td>Copies each kernel that has a ZFS module into <code>/boot</code> with its initramfs, so ZFSBootMenu can boot it. A kernel without one is left out</td></tr>
     <tr><td>EFI boot-order guard</td><td>Keeps ZFSBootMenu first; never deletes other entries</td></tr>
     <tr><td>Snapper cleanup</td><td>Removes btrfs-only snapper configs that abort <code>omarchy update</code> on ZFS</td></tr>
     <tr><td>Pool health</td><td>Monthly <code>zpool scrub</code> timer</td></tr>
@@ -381,7 +382,25 @@ sudo pacman -Sy omarchy-zfs</code></pre>
     <summary>Which Omarchy versions are supported?</summary>
     <div><p>Omarchy Quattro (4.x) and later. The releases served entirely from Arch
     packages, which is what makes a clean support layer possible. Earlier Omarchy
-    versions used a different install model and aren't supported.</p></div>
+    versions used a different install model and aren't supported.</p>
+    <p>Omarchy 4.5 installs its own kernel, <code>linux-omarchy</code>, and makes it the default.
+    It's a 7.2 kernel. You need omarchy-zfs 1.2.0 or later and OpenZFS 2.4.4 or later, the first
+    release that builds for 7.2. Update ZFS on its own, then run <code>omarchy update</code>:</p>
+    <pre><code>yay -S aur/zfs-dkms aur/zfs-utils</code></pre>
+    <p>Keep the <code>aur/</code> prefix. <code>[archzfs]</code> still serves 2.3.3, and pacman and
+    yay both prefer it. After the update ZFSBootMenu boots <code>linux-omarchy</code> by default,
+    and the stock kernel stays in its menu.</p></div>
+  </details>
+  <details>
+    <summary>I came from omarchy-on-zfs. Is my pool key on the ESP?</summary>
+    <div><p>It was, until 1.2.0. The fork wrote a mkinitcpio drop-in that put the pool keyfile in
+    every initramfs, including the Limine UKI on the ESP. The ESP isn't encrypted. Anyone holding
+    the disk could read the key out of it.</p>
+    <p>1.2.0 removes the drop-in, rebuilds the Limine images, and checks inside every UKI on every
+    refresh after that. I found it on my own workstation, where it had been sitting since April.</p>
+    <p>Did the disk ever leave your hands? Then change the pool passphrase with
+    <code>zfs change-key</code>, and run <code>omarchy-refresh-zbm</code> so the image inside the
+    pool carries the new one. If it never left your house, that part is your call.</p></div>
   </details>
   <details>
     <summary>Which ZFS packages does it work with?</summary>

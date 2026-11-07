@@ -39,6 +39,9 @@
   zfsbootmenu.org).
 - Not on the AUR: the AUR deleted omarchy-zfs in October 2026 because it requires
   Omarchy at runtime and so does not work on vanilla Arch.
+- Omarchy 4.5: supported from omarchy-zfs 1.2.0. Its linux-omarchy kernel is 7.2
+  and needs OpenZFS 2.4.4 or later (yay -S aur/zfs-dkms aur/zfs-utils). Update ZFS
+  in its own transaction before omarchy update.
 - Fresh machine: the omarchy-zfs ISO (beta). The official Omarchy installer plus a
   root-on-ZFS path, fully offline. Download:
   https://dl.omarchy-zfs.com/omarchy-zfs-2026.08.20.1-x86_64-quattro.iso
